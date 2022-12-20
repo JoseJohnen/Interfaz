@@ -1,0 +1,12 @@
+E:\Cod_Pers\Interfaz\bin\Release\net6.0\Interfaz.deps.json
+E:\Cod_Pers\Interfaz\bin\Release\net6.0\Interfaz.dll
+E:\Cod_Pers\Interfaz\bin\Release\net6.0\Interfaz.pdb
+E:\Cod_Pers\Interfaz\obj\Release\net6.0\Interfaz.csproj.AssemblyReference.cache
+E:\Cod_Pers\Interfaz\obj\Release\net6.0\Interfaz.GeneratedMSBuildEditorConfig.editorconfig
+E:\Cod_Pers\Interfaz\obj\Release\net6.0\Interfaz.AssemblyInfoInputs.cache
+E:\Cod_Pers\Interfaz\obj\Release\net6.0\Interfaz.AssemblyInfo.cs
+E:\Cod_Pers\Interfaz\obj\Release\net6.0\Interfaz.csproj.CoreCompileInputs.cache
+E:\Cod_Pers\Interfaz\obj\Release\net6.0\Interfaz.dll
+E:\Cod_Pers\Interfaz\obj\Release\net6.0\refint\Interfaz.dll
+E:\Cod_Pers\Interfaz\obj\Release\net6.0\Interfaz.pdb
+E:\Cod_Pers\Interfaz\obj\Release\net6.0\ref\Interfaz.dll
