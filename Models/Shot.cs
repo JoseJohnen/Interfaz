@@ -82,14 +82,66 @@ namespace Interfaz.Models
 
                 Shot shot = new Shot();
                 string[] a = UtilityAssistant.CutJson(strJson);
+                
+                if (a[0] != null)
+                {
+                    shot.Id = Convert.ToInt32(a[0]);
+                }
+                else
+                {
+                    Console.WriteLine("a[0] es null, strJason es: "+strJson);
+                    shot.Id = 0;
+                }
 
-                shot.Id = Convert.ToInt32(a[0]);
-                shot.LN = a[1];
-                shot.Type = a[2];
+                if (a[1] != null)
+                {
+                    shot.LN = a[1];
+                }
+                else
+                {
+                    Console.WriteLine("a[1] es null, strJason es: " + strJson);
+                    shot.LN = string.Empty;
+                }
 
-                shot.OrPos= UtilityAssistant.XmlToClass<SerializedVector3>(a[3]).ConvertToVector3();
-                shot.WPos= UtilityAssistant.XmlToClass<SerializedVector3>(a[4]).ConvertToVector3();
-                shot.Mdf= UtilityAssistant.XmlToClass<SerializedVector3>(a[5]).ConvertToVector3();
+                if (a[2] != null)
+                {
+                    shot.Type = a[2];
+                }
+                else
+                {
+                    Console.WriteLine("a[2] es null, strJason es: " + strJson);
+                    shot.Type = string.Empty;
+                }
+
+                if (a[3] != null)
+                {
+                    shot.OrPos= UtilityAssistant.XmlToClass<SerializedVector3>(a[3]).ConvertToVector3();
+                }
+                else
+                {
+                    Console.WriteLine("a[3] es null, strJason es: " + strJson);
+                    shot.OrPos = Vector3.Zero;
+                }
+
+                if (a[4] != null)
+                {
+                    shot.WPos = UtilityAssistant.XmlToClass<SerializedVector3>(a[4]).ConvertToVector3();
+                }
+                else
+                {
+                    Console.WriteLine("a[4] es null, strJason es: " + strJson);
+                    shot.WPos = Vector3.Zero;
+                }
+
+                if (a[5] != null)
+                {
+                    shot.Mdf = UtilityAssistant.XmlToClass<SerializedVector3>(a[5]).ConvertToVector3();
+                }
+                else
+                {
+                    Console.WriteLine("a[5] es null, strJason es: " + strJson);
+                    shot.Mdf = Vector3.Zero;
+                }
 
                 return shot;
             }

@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics;
+using System.Numerics;
 using System.Xml.Serialization;
 
 namespace Interfaz.Utilities
@@ -436,18 +437,27 @@ namespace Interfaz.Utilities
 
         public static T XmlToClass<T>(string xml)
         {
+            string toProcess = string.Empty;
             try
             {
-                string toProcess = xml.Replace("xmlns:xsi=http://www.w3.org/2001/XMLSchema-instance xmlns:xsd=http://www.w3.org/2001/XMLSchema", "").Replace("1.0", "\"1.0\"").Replace("utf-16", "\"utf-16\"").Replace("UTF-8", "\"UTF-8\"");
+                toProcess = xml.Replace("xmlns:xsi=http://www.w3.org/2001/XMLSchema-instance xmlns:xsd=http://www.w3.org/2001/XMLSchema", "").Replace("version=1.0", "version=\"1.0\"").Replace("utf-16", "\"utf-16\"").Replace("UTF-8", "\"UTF-8\"");
                 XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
                 using (StringReader textReader = new StringReader(toProcess))
                 {
-                    return (T)xmlSerializer.Deserialize(textReader);
+                    if(textReader != null)
+                    {
+                        return (T)xmlSerializer.Deserialize(textReader);
+                    }
+                    else
+                    {
+                        Console.WriteLine("StringReader is Null: " + xml);
+                    }
                 }
+                return default(T);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error T XmlToClass<T>: " + ex.Message);
+                Console.WriteLine("Error T XmlToClass<T>: " + ex.Message + " Variable in processing: "+ toProcess);
                 return default(T);
             }
         }

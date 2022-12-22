@@ -56,7 +56,7 @@ namespace Interfaz.Utilities
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error Constructur SerializedVector3(string): "+ex.Message, ConsoleColor.Red);
+                Console.WriteLine("Error Constructur SerializedVector3(string): " + ex.Message, ConsoleColor.Red);
             }
         }
 
@@ -119,30 +119,46 @@ namespace Interfaz.Utilities
 
         public string ToXML()
         {
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-            ns.Add(String.Empty, String.Empty);
-            XmlSerializer serializer = new XmlSerializer(typeof(SerializedVector3));
-            string result = string.Empty;
-            using (StringWriter textWriter = new StringWriter())
+            try
             {
-                serializer.Serialize(textWriter, this, ns);
-                result = textWriter.ToString();
-                return result;
+                XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+                ns.Add(String.Empty, String.Empty);
+                XmlSerializer serializer = new XmlSerializer(typeof(SerializedVector3));
+                string result = string.Empty;
+                using (StringWriter textWriter = new StringWriter())
+                {
+                    serializer.Serialize(textWriter, this, ns);
+                    result = textWriter.ToString();
+                    return result;
+                }
+                return string.Empty;
             }
-            return string.Empty;
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string ToXML: " + ex.Message);
+                return string.Empty;
+            }
         }
 
         public static string ToXML(SerializedVector3 serializedVector3)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(SerializedVector3));
-            string result = string.Empty;
-            using (StringWriter textWriter = new StringWriter())
+            try
             {
-                serializer.Serialize(textWriter, serializedVector3);
-                result = textWriter.ToString();
-                return result;
+                XmlSerializer serializer = new XmlSerializer(typeof(SerializedVector3));
+                string result = string.Empty;
+                using (StringWriter textWriter = new StringWriter())
+                {
+                    serializer.Serialize(textWriter, serializedVector3);
+                    result = textWriter.ToString();
+                    return result;
+                }
+                return string.Empty;
             }
-            return string.Empty;
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error static string ToXML: " + ex.Message);
+                return string.Empty;
+            }
         }
 
         public string ToJson()
