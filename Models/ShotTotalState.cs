@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Interfaz.Utilities;
+using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace Interfaz.Models
 {
@@ -82,8 +84,6 @@ namespace Interfaz.Models
                 //ReadCommentHandling = JsonCommentHandling.Skip,
                 ShotTotalState shot = JsonConvert.DeserializeObject<ShotTotalState>(json, serializeOptions);
 
-
-
                 /*string strJson = json;
                 string[] a = UtilityAssistant.CutJson(strJson);
 
@@ -96,22 +96,40 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error FromJson(): " + ex.Message);
+                Console.WriteLine("Error ShotTotalState FromJson(): json: "  + json + " Message: "+ ex.Message);
                 return default(ShotTotalState);
             }
         }
 
-        public static ShotTotalState CreateFromJson(string json)
+        public static ShotTotalState[] CreateFromJson(string json)
         {
             try
             {
-                ShotTotalState shot = new();
-                return shot.FromJson(json);
+                ShotTotalState[] shotTotalStates = new ShotTotalState[0];
+                if (Regex.Matches(json, "SM:").Count > 1)
+                {
+                    Console.BackgroundColor = ConsoleColor.Green;
+                    string[] jsonCuts = json.Split("SM:", StringSplitOptions.RemoveEmptyEntries);
+                    shotTotalStates = new ShotTotalState[jsonCuts.Length];
+                    int i = 0;
+                    foreach (string jsonCut in jsonCuts.Where(f => (f[1] == '{') && (f[(f.Length - 2)] == '}')).ToList())
+                    {
+                        ShotTotalState shot = new();
+                        shotTotalStates[i] = shot.FromJson(jsonCut);
+                        i++;
+                        Console.WriteLine("From FromJSON: " + jsonCut);
+                        Console.WriteLine("FirstCharacter is {0}, because it is {1}", (jsonCut[1] == '{'), jsonCut[1]);
+                        Console.WriteLine("LastCharacter is {0}, because it is {1}", (jsonCut[(jsonCut.Length - 2)] == '}'), jsonCut[(jsonCut.Length - 2)]);
+                    }
+                    Console.ResetColor();
+                }
+
+                return shotTotalStates;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error CreateFromJson(): " + ex.Message);
-                return default(ShotTotalState);
+                return new ShotTotalState[0];
             }
         }
     }
@@ -142,9 +160,10 @@ namespace Interfaz.Models
 
         public override ShotTotalState ReadJson(JsonReader reader, Type objectType, ShotTotalState existingValue, bool hasExistingValue, Newtonsoft.Json.JsonSerializer serializer)
         {
+            string strEntity = string.Empty;
             try
             {
-                string strEntity = (string)reader.Value;
+                strEntity = (string)reader.Value;
                 JsonSerializerSettings jsonOptions = new JsonSerializerSettings
                 {
                     Converters =
@@ -159,7 +178,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: (ShotTotalStateConverterJSON) ReadJson(): " + ex.Message);
+                Console.WriteLine("Error: (ShotTotalStateConverterJSON) ReadJson(): " + ex.Message + " strEntity: "+ strEntity);
                 return default(ShotTotalState);
             }
         }

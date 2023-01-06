@@ -59,7 +59,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error FromJson(): " + ex.Message);
+                Console.WriteLine("Error Shot FromJson(): " + ex.Message);
                 return default(Shot);
             }
         }
@@ -75,10 +75,11 @@ namespace Interfaz.Models
     {
         public override Shot Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            string strJson = string.Empty;
             try
             {
                 //TODO: Corregir, testear y terminar
-                string strJson = reader.GetString();
+                strJson = reader.GetString();
 
                 Shot shot = new Shot();
                 string[] a = UtilityAssistant.CutJson(strJson);
@@ -147,7 +148,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: (ShotConverter) Read(): " + ex.Message);
+                Console.WriteLine("Error: (ShotConverter) Read(): {0} Message: {1}", strJson, ex.Message);
                 return default(Shot);
             }
         }
@@ -199,10 +200,11 @@ namespace Interfaz.Models
 
         public override Shot ReadJson(JsonReader reader, Type objectType, Shot existingValue, bool hasExistingValue, Newtonsoft.Json.JsonSerializer serializer)
         {
+            string strJson = string.Empty;
             try
             {
+                strJson = (string)reader.Value;
                 //TODO: Corregir, testear y terminar
-                string strJson = (string)reader.Value;
 
                 Shot shot = new Shot();
                 string[] a = UtilityAssistant.CutJson(strJson);
@@ -219,7 +221,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: (ShotConverterJSON) ReadJson(): " + ex.Message);
+                Console.WriteLine("Error: (ShotConverterJSON) ReadJson(): {0} Message: {1}", strJson, ex.Message);
                 return default(Shot);
             }
         }

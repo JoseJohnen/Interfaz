@@ -61,11 +61,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\Cod_Pers\\Interfaz\\Interfaz.csproj",
+      "projectUniqueName": "E:\\Cod_Pers\\Visual_Studio\\Interfaz\\Interfaz.csproj",
       "projectName": "Interfaz",
-      "projectPath": "E:\\Cod_Pers\\Interfaz\\Interfaz.csproj",
+      "projectPath": "E:\\Cod_Pers\\Visual_Studio\\Interfaz\\Interfaz.csproj",
       "packagesPath": "C:\\Users\\jjohn\\.nuget\\packages\\",
-      "outputPath": "E:\\Cod_Pers\\Interfaz\\obj\\",
+      "outputPath": "E:\\Cod_Pers\\Visual_Studio\\Interfaz\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

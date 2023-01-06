@@ -1,5 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Sockets;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Interfaz.Models
 {
@@ -8,13 +10,23 @@ namespace Interfaz.Models
         public static List<GameSocketClient> L_GameSocketClients = new List<GameSocketClient>();
 
         private bool clientConstructionReady = false;
+        private bool sendAsyncIsConnected = false;
+        private ConcurrentQueue<string> l_sendBigMessages = new ConcurrentQueue<string>();
+
+        private int receiveAccepted = 0;
         public string Email { get; set; }
         public Socket ListenerSocket { get; set; }
         public Socket SenderSocket { get; set; }
+        public Socket StreamSocket { get; set; }
         public ConcurrentQueue<string> l_SendQueueMessages { get; set; }
+        //public ConcurrentQueue<string> l_SendBigMessages { get; set; }
+        public ConcurrentQueue<string> l_SendBigMessages { get; set; }
         public ConcurrentQueue<string> l_ReceiveQueueMessages { get; set; }
+        public ConcurrentQueue<string> l_ReceiveBigMessages { get; set; }
+        public NetworkStream StreamNetwork { get; set; }
         public bool ClientConstructionReady { get => clientConstructionReady; set => clientConstructionReady = value; }
-        public NetworkStream StreamSocket { get; set; }
+        public bool SendAsyncIsConnected { get => sendAsyncIsConnected; set => sendAsyncIsConnected = value; }
+        public int ReceiveAccepted { get => receiveAccepted; set => receiveAccepted = value; }
 
         public GameSocketClient(Socket ListenerSocket)
         {
@@ -23,7 +35,10 @@ namespace Interfaz.Models
             this.SenderSocket = null;
             this.l_SendQueueMessages = new ConcurrentQueue<string>();
             this.l_ReceiveQueueMessages = new ConcurrentQueue<string>();
+            this.l_SendBigMessages = new ConcurrentQueue<string>();
+            this.l_ReceiveBigMessages = new ConcurrentQueue<string>();
             this.ClientConstructionReady = false;
+            this.SendAsyncIsConnected = false;
         }
 
         public GameSocketClient()
@@ -33,7 +48,10 @@ namespace Interfaz.Models
             this.SenderSocket = null;
             this.l_SendQueueMessages = new ConcurrentQueue<string>();
             this.l_ReceiveQueueMessages = new ConcurrentQueue<string>();
+            this.l_SendBigMessages = new ConcurrentQueue<string>();
+            this.l_ReceiveBigMessages = new ConcurrentQueue<string>();
             this.ClientConstructionReady = false;
+            this.SendAsyncIsConnected = false;
         }
 
         public bool CloseConnection()
@@ -56,6 +74,22 @@ namespace Interfaz.Models
                     }
                 }
 
+                if (this.l_SendBigMessages != null)
+                {
+                    if (this.l_SendBigMessages.Count > 0)
+                    {
+                        this.l_SendBigMessages.Clear();
+                    }
+                }
+
+                if (this.l_ReceiveBigMessages != null)
+                {
+                    if (this.l_ReceiveBigMessages.Count > 0)
+                    {
+                        this.l_ReceiveBigMessages.Clear();
+                    }
+                }
+
                 if (this.SenderSocket != null)
                 {
                     this.SenderSocket.Shutdown(SocketShutdown.Both);
@@ -70,12 +104,15 @@ namespace Interfaz.Models
                     this.ListenerSocket.Dispose();
                 }
 
-                if (this.StreamSocket != null)
+                if (this.StreamNetwork != null)
                 {
+                    this.StreamNetwork.Close();
+                    this.StreamNetwork.Dispose();
                     this.StreamSocket.Close();
                     this.StreamSocket.Dispose();
                 }
 
+                receiveAccepted = 0;
                 GameSocketClient.L_GameSocketClients.Remove(this);
                 return true;
             }

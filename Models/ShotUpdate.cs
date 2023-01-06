@@ -61,7 +61,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error FromJson(): " + ex.Message);
+                Console.WriteLine("Error ShotUpdate FromJson(): " + ex.Message);
                 return default(Shot);
             }
         }
@@ -77,10 +77,11 @@ namespace Interfaz.Models
     {
         public override ShotUpdate Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            string strJson = string.Empty;
             try
             {
                 //TODO: Corregir, testear y terminar
-                string strJson = reader.GetString();
+                strJson = reader.GetString();
 
                 ShotUpdate shot = new ShotUpdate();
                 string[] a = UtilityAssistant.CutJson(strJson);
@@ -92,7 +93,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: (ShotUpdateConverter) Read(): " + ex.Message);
+                Console.WriteLine("Error: (ShotUpdateConverter) Read(): {0} Message: {1}", strJson, ex.Message);
                 return default(ShotUpdate);
             }
         }
@@ -136,10 +137,11 @@ namespace Interfaz.Models
 
         public override ShotUpdate ReadJson(JsonReader reader, Type objectType, ShotUpdate existingValue, bool hasExistingValue, Newtonsoft.Json.JsonSerializer serializer)
         {
+            string strJson = string.Empty;
             try
             {
                 //TODO: Corregir, testear y terminar
-                string strJson = (string)reader.Value;
+                strJson = (string)reader.Value;
 
                 //Console.BackgroundColor = ConsoleColor.Green;
                 //Console.WriteLine("strJson: "+ strJson);
@@ -154,7 +156,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: (ShotUpdateConverterJSON) ReadJson(): " + ex.Message);
+                Console.WriteLine("Error: (ShotUpdateConverterJSON) ReadJson(): {0} Message: {1}", strJson, ex.Message);
                 return default(ShotUpdate);
             }
         }
