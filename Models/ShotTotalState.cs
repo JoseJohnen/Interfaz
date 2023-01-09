@@ -7,13 +7,15 @@ namespace Interfaz.Models
     public struct ShotTotalState
     {
 
-        public List<Shot> l_shots = new List<Shot>();
-        public List<ShotUpdate> l_shotsUpdates = new List<ShotUpdate>();
+        public List<Shot> l_shotsCreated = new List<Shot>();
+        public List<ShotPosUpdate> l_shotsPosUpdates = new List<ShotPosUpdate>();
+        public List<ShotState> l_shotsStates = new List<ShotState>();
 
         public ShotTotalState()
         {
-            l_shots = new List<Shot>();
-            l_shotsUpdates = new List<ShotUpdate>();
+            l_shotsCreated = new List<Shot>();
+            l_shotsPosUpdates = new List<ShotPosUpdate>();
+            l_shotsStates = new List<ShotState>();
         }
 
         public string ToJson()
@@ -34,20 +36,20 @@ namespace Interfaz.Models
 
                 /*string json = "{";
                 json += "[";
-                for (int i = 0; i < l_shots.Count; i++)
+                for (int i = 0; i < l_shotsCreated.Count; i++)
                 {
-                    json += l_shots[i].ToJson();
-                    if (i < (l_shots.Count - 1))
+                    json += l_shotsCreated[i].ToJson();
+                    if (i < (l_shotsCreated.Count - 1))
                     {
                         json += ",";
                     }
                 }
                 json += "],";
                 json += "[";
-                for (int i = 0; i < l_shotsUpdates.Count; i++)
+                for (int i = 0; i < l_shotsPosUpdates.Count; i++)
                 {
-                    json += l_shotsUpdates[i].ToJson();
-                    if (i < (l_shotsUpdates.Count - 1))
+                    json += l_shotsPosUpdates[i].ToJson();
+                    if (i < (l_shotsPosUpdates.Count - 1))
                     {
                         json += ", ";
                     }
@@ -68,6 +70,20 @@ namespace Interfaz.Models
         {
             try
             {
+                if (Regex.Matches(json, "l_shotsCreated").Count != 1 ||
+                    Regex.Matches(json, "l_shotsPosUpdates").Count != 1 ||
+                    Regex.Matches(json, "l_shotsStates").Count != 1 ||
+                    (Regex.Matches(json, "{").Count != Regex.Matches(json, "}").Count) ||
+                    (Regex.Matches(json, @"\[").Count != Regex.Matches(json, "]").Count) 
+                    )
+                {
+                    Console.BackgroundColor = ConsoleColor.DarkBlue;
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("¡Error prevented! (ShotTotalState) FromJson(): Defective Json: "+json);
+                    Console.ResetColor();
+                    return default(ShotTotalState);
+                }
+
                 JsonSerializerSettings serializeOptions = new JsonSerializerSettings
                 {
                     Converters =
@@ -76,27 +92,16 @@ namespace Interfaz.Models
                     },
                 };
 
-                //Console.BackgroundColor = ConsoleColor.Green;
-                //Console.WriteLine("json: " + json);
-                //Console.ResetColor();
-
-                //AllowTrailingCommas = true,
-                //ReadCommentHandling = JsonCommentHandling.Skip,
                 ShotTotalState shot = JsonConvert.DeserializeObject<ShotTotalState>(json, serializeOptions);
-
-                /*string strJson = json;
-                string[] a = UtilityAssistant.CutJson(strJson);
-
-                string b = a[0];
-                string d = a[1];
-
-                string c = b + d;*/
 
                 return shot;
             }
             catch (Exception ex)
             {
+                Console.BackgroundColor = ConsoleColor.Red; 
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("Error ShotTotalState FromJson(): json: "  + json + " Message: "+ ex.Message);
+                Console.ResetColor();
                 return default(ShotTotalState);
             }
         }
@@ -105,8 +110,8 @@ namespace Interfaz.Models
         {
             try
             {
-                ShotTotalState[] shotTotalStates = new ShotTotalState[0];
-                if (Regex.Matches(json, "SM:").Count > 1)
+                ShotTotalState[] shotTotalStates = new ShotTotalState[1];
+                if (Regex.Matches(json, "SM:").Count >= 1)
                 {
                     Console.BackgroundColor = ConsoleColor.Green;
                     string[] jsonCuts = json.Split("SM:", StringSplitOptions.RemoveEmptyEntries);
@@ -122,6 +127,11 @@ namespace Interfaz.Models
                         Console.WriteLine("LastCharacter is {0}, because it is {1}", (jsonCut[(jsonCut.Length - 2)] == '}'), jsonCut[(jsonCut.Length - 2)]);
                     }
                     Console.ResetColor();
+                }
+                else if(Regex.Matches(json, "SM:").Count == 0)
+                {
+                    ShotTotalState shot = new();
+                    shotTotalStates[0] = shot.FromJson(json);
                 }
 
                 return shotTotalStates;

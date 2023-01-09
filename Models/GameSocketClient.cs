@@ -60,7 +60,7 @@ namespace Interfaz.Models
             {
                 if(this.l_SendQueueMessages != null)
                 {
-                    if(this.l_SendQueueMessages.Count >0)
+                    if(this.l_SendQueueMessages.Count > 0)
                     {
                         this.l_SendQueueMessages.Clear();
                     }

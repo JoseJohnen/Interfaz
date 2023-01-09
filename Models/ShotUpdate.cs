@@ -5,12 +5,12 @@ using System.Text.Json;
 
 namespace Interfaz.Models
 {
-    public struct ShotUpdate
+    public struct ShotPosUpdate
     {
         public int Id { get; set; }
         public Vector3 Pos { get; set; }
 
-        public ShotUpdate(int id, Vector3 pos)
+        public ShotPosUpdate(int id, Vector3 pos)
         {
             this.Id = id;
             this.Pos = pos;
@@ -61,7 +61,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error ShotUpdate FromJson(): " + ex.Message);
+                Console.WriteLine("Error ShotPosUpdate FromJson(): " + ex.Message);
                 return default(Shot);
             }
         }
@@ -73,9 +73,9 @@ namespace Interfaz.Models
         }
     }
 
-    public class ShotUpdateConverter : System.Text.Json.Serialization.JsonConverter<ShotUpdate>
+    public class ShotUpdateConverter : System.Text.Json.Serialization.JsonConverter<ShotPosUpdate>
     {
-        public override ShotUpdate Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override ShotPosUpdate Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             string strJson = string.Empty;
             try
@@ -83,7 +83,7 @@ namespace Interfaz.Models
                 //TODO: Corregir, testear y terminar
                 strJson = reader.GetString();
 
-                ShotUpdate shot = new ShotUpdate();
+                ShotPosUpdate shot = new ShotPosUpdate();
                 string[] a = UtilityAssistant.CutJson(strJson);
 
                 shot.Id = Convert.ToInt32(a[0]);
@@ -94,11 +94,11 @@ namespace Interfaz.Models
             catch (Exception ex)
             {
                 Console.WriteLine("Error: (ShotUpdateConverter) Read(): {0} Message: {1}", strJson, ex.Message);
-                return default(ShotUpdate);
+                return default(ShotPosUpdate);
             }
         }
 
-        public override void Write(Utf8JsonWriter writer, ShotUpdate shot, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, ShotPosUpdate shot, JsonSerializerOptions options)
         {
             try
             {
@@ -116,9 +116,9 @@ namespace Interfaz.Models
         }
     }
 
-    public class ShotUpdateConverterJSON : Newtonsoft.Json.JsonConverter<ShotUpdate>
+    public class ShotUpdateConverterJSON : Newtonsoft.Json.JsonConverter<ShotPosUpdate>
     {
-        public override void WriteJson(JsonWriter writer, ShotUpdate shot, Newtonsoft.Json.JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, ShotPosUpdate shot, Newtonsoft.Json.JsonSerializer serializer)
         {
             try
             {
@@ -135,7 +135,7 @@ namespace Interfaz.Models
             }
         }
 
-        public override ShotUpdate ReadJson(JsonReader reader, Type objectType, ShotUpdate existingValue, bool hasExistingValue, Newtonsoft.Json.JsonSerializer serializer)
+        public override ShotPosUpdate ReadJson(JsonReader reader, Type objectType, ShotPosUpdate existingValue, bool hasExistingValue, Newtonsoft.Json.JsonSerializer serializer)
         {
             string strJson = string.Empty;
             try
@@ -147,7 +147,7 @@ namespace Interfaz.Models
                 //Console.WriteLine("strJson: "+ strJson);
                 //Console.ResetColor();
 
-                ShotUpdate shot = new ShotUpdate();
+                ShotPosUpdate shot = new ShotPosUpdate();
                 string[] a = UtilityAssistant.CutJson(strJson);
                 shot.Id = Convert.ToInt32(a[0]);
                 shot.Pos = UtilityAssistant.XmlToClass<SerializedVector3>(a[1]).ConvertToVector3();
@@ -157,7 +157,7 @@ namespace Interfaz.Models
             catch (Exception ex)
             {
                 Console.WriteLine("Error: (ShotUpdateConverterJSON) ReadJson(): {0} Message: {1}", strJson, ex.Message);
-                return default(ShotUpdate);
+                return default(ShotPosUpdate);
             }
         }
     }

@@ -18,7 +18,6 @@ namespace Interfaz.Models
         {
             try
             {
-
                 JsonSerializerOptions serializeOptions = new JsonSerializerOptions
                 {
                     Converters =
@@ -33,7 +32,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error ToJson(): " + ex.Message);
+                Console.WriteLine("Error (Shot) ToJson(): " + ex.Message);
                 return string.Empty;
             }
         }
@@ -50,7 +49,7 @@ namespace Interfaz.Models
                     },
                 };
 
-                    //AllowTrailingCommas = true,
+                //AllowTrailingCommas = true,
                 //ReadCommentHandling = JsonCommentHandling.Skip,
                 Shot shot = System.Text.Json.JsonSerializer.Deserialize<Shot>(json, serializeOptions);
                 //this = shot;
@@ -59,15 +58,23 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error Shot FromJson(): " + ex.Message);
+                Console.WriteLine("Error (Shot) FromJson(): " + ex.Message);
                 return default(Shot);
             }
         }
 
         public static Shot CreateFromJson(string json)
         {
-            Shot shot = new();
-            return shot.FromJson(json);
+            try
+            {
+                Shot shot = new();
+                return shot.FromJson(json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error (Shot) FromJson(): " + ex.Message);
+                return default(Shot);
+            }
         }
     }
 
@@ -83,14 +90,14 @@ namespace Interfaz.Models
 
                 Shot shot = new Shot();
                 string[] a = UtilityAssistant.CutJson(strJson);
-                
+
                 if (a[0] != null)
                 {
                     shot.Id = Convert.ToInt32(a[0]);
                 }
                 else
                 {
-                    Console.WriteLine("a[0] es null, strJason es: "+strJson);
+                    Console.WriteLine("a[0] es null, strJason es: " + strJson);
                     shot.Id = 0;
                 }
 
@@ -116,7 +123,7 @@ namespace Interfaz.Models
 
                 if (a[3] != null)
                 {
-                    shot.OrPos= UtilityAssistant.XmlToClass<SerializedVector3>(a[3]).ConvertToVector3();
+                    shot.OrPos = UtilityAssistant.XmlToClass<SerializedVector3>(a[3]).ConvertToVector3();
                 }
                 else
                 {
