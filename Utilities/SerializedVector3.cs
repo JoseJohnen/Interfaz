@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Text.Json;
 using System.Xml.Serialization;
 
 namespace Interfaz.Utilities
@@ -161,14 +162,73 @@ namespace Interfaz.Utilities
             }
         }
 
-        public string ToJson()
+        public enum TextOrNewtonsoft { Text = 0, Newtonsoft = 1}
+        public string ToJson(TextOrNewtonsoft ton = TextOrNewtonsoft.Text)
         {
-            return "{ \"X\":" + this.X + ", \"Y\":" + this.Y + ", \"Z\":" + this.Z + " }";
+            try
+            {
+                if(ton == TextOrNewtonsoft.Text)
+                {
+                    return JsonSerializer.Serialize(this);
+                }
+                else
+                {
+                    return Newtonsoft.Json.JsonConvert.SerializeObject(this);
+                }
+                //return "{ \"X\":" + this.X + ", \"Y\":" + this.Y + ", \"Z\":" + this.Z + " }";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string ToJson: " + ex.Message);
+                return string.Empty;
+            }
         }
 
-        public static string ToJson(SerializedVector3 serializedVector3)
+        public static string ToJson(SerializedVector3 serializedVector3, TextOrNewtonsoft ton = TextOrNewtonsoft.Text)
         {
-            return "{ \"X\":" + serializedVector3.X + ", \"Y\":" + serializedVector3.Y + ", \"Z\":" + serializedVector3.Z + " }";
+            try
+            {
+                return serializedVector3.ToJson(ton);
+                //return "{ \"X\":" + serializedVector3.X + ", \"Y\":" + serializedVector3.Y + ", \"Z\":" + serializedVector3.Z + " }";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error static string ToJson(SerializedVector3): " + ex.Message);
+                return string.Empty;
+            }
+        }
+
+        public static SerializedVector3 FromJson(string strJson)
+        {
+            try
+            {
+                if(string.IsNullOrWhiteSpace(strJson))
+                {
+                    return new SerializedVector3();
+                }
+
+                string jsonExtract = strJson.ReplaceFirst("{", "").ReplaceLast("}", "");
+                string[] arrResult = jsonExtract.Split(",");
+
+                float[] fltArry = new float[arrResult.Length];
+                for (int i = 0; i < arrResult.Length; i++)
+                {
+                    string d = arrResult[i].Substring(arrResult[i].IndexOf(":")+1)+"Listo";
+                    if (!float.TryParse(arrResult[i].Substring(arrResult[i].IndexOf(":")+1), out fltArry[i]))
+                    {
+                        throw (new Exception("Conversion Failed in position: "+i+ " |Asociated Values Total: " + arrResult[i]+" |Specific Values: "+ arrResult[i].Substring(arrResult[i].IndexOf(":") + 1)));
+                    }
+                }
+                string[] a = arrResult;
+
+                return new SerializedVector3();
+                //return "{ \"X\":" + serializedVector3.X + ", \"Y\":" + serializedVector3.Y + ", \"Z\":" + serializedVector3.Z + " }";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error static SerializedVector3 FromJson(string): " + ex.Message);
+                return new SerializedVector3();
+            }
         }
 
         public static SerializedVector3 operator +(SerializedVector3 a, SerializedVector3 b)

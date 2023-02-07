@@ -137,7 +137,7 @@ namespace Interfaz.Utilities
                 //Extract relevant part
                 string particleswithdots = particle + ":";
                 string b = instructions.Substring(instructions.IndexOf(particle));
-                string d = b.Contains("r/n/") ? b.Substring(0, b.IndexOf("r/n/")) : b ;
+                string d = b.Contains("r/n/") ? b.Substring(0, b.IndexOf("r/n/")) : b;
 
                 //Process relevant part
                 string specificRelevantInstruction = d.Substring(particleswithdots.Length);
@@ -192,7 +192,7 @@ namespace Interfaz.Utilities
         {
             try
             {
-                if(!instructions.Contains(particle))
+                if (!instructions.Contains(particle))
                 {
                     return instructions;
                 }
@@ -444,7 +444,7 @@ namespace Interfaz.Utilities
                 XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
                 using (StringReader textReader = new StringReader(toProcess))
                 {
-                    if(textReader != null)
+                    if (textReader != null)
                     {
                         return (T)xmlSerializer.Deserialize(textReader);
                     }
@@ -457,7 +457,7 @@ namespace Interfaz.Utilities
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error T XmlToClass<T>: " + ex.Message + " Variable in processing: "+ toProcess);
+                Console.WriteLine("Error T XmlToClass<T>: " + ex.Message + " Variable in processing: " + toProcess);
                 return default(T);
             }
         }
@@ -618,6 +618,149 @@ namespace Interfaz.Utilities
                 return String.Empty;
             }
         }
+
+        public static string CleanJSON(string json)
+        {
+            string strTemp = json;
+            string strSecTemp = string.Empty;
+            try
+            {
+                //Verificar si es relevante siquiera correr la función
+                if (string.IsNullOrWhiteSpace(strTemp))
+                {
+                    return string.Empty;
+                }
+
+                if (strTemp.IndexOf("{") > 1)
+                {
+                    Console.WriteLine("Entro a indexOf>1");
+                    strSecTemp = strTemp.Substring(0, strTemp.IndexOf("{"));
+                    strTemp = strTemp.Replace(strSecTemp, "");
+                }
+
+                if (strTemp.Contains("}"))
+                {
+                    if ((strTemp.Length - strTemp.LastIndexOf("}")) > 2)
+                    {
+                        Console.WriteLine("Entro a LastIndexOf>2");
+                        strTemp = strTemp.Replace(strTemp.Substring(strTemp.LastIndexOf("}") + 1), "");
+                    }
+                }
+
+                /*if (strTemp.Contains("\\"))
+                {
+                    strTemp = strTemp.Replace("\\", "");
+                }*/
+
+                while (strTemp.Contains("\\"))
+                {
+                    strTemp = strTemp.Replace("\\", "");
+                }
+
+                if (strTemp.Contains("u0022"))
+                {
+                    strTemp = strTemp.Replace("u0022", "\"");
+                }
+
+                if (strTemp.Contains("},]"))
+                {
+                    strTemp = strTemp.Replace("},]", "}]");
+                }
+
+                if (strTemp.Contains("u003C"))
+                {
+                    strTemp = strTemp.Replace("u003C", "<");
+                }
+
+                if (strTemp.Contains("u003E"))
+                {
+                    strTemp = strTemp.Replace("u003E", ">");
+                }
+
+                while (strTemp.Contains("\"\""))
+                {
+                    strTemp = strTemp.Replace("\"\"", "\"");
+                }
+
+                if (strTemp.Contains("\"{\""))
+                {
+                    strTemp = strTemp.Replace("\"{\"", "{\"");
+                }
+
+                if (strTemp.Contains("\"}\""))
+                {
+                    strTemp = strTemp.Replace("\"}\"", "\"}");
+                }
+
+                if(strTemp.Contains("},]"))
+                {
+                    strTemp = strTemp.Replace("},]", "}]");
+                }
+
+                /*if (strTemp.Contains("\""))
+                {
+                    strTemp = strTemp.Replace("\"", "");
+                }*/
+
+                //Verificar que algo quedo después de la limpieza, asumiendo que el string no era solo basura
+                if (string.IsNullOrWhiteSpace(strTemp))
+                {
+                    return string.Empty;
+                }
+
+                //Cleaning remanents outside of "{ }" so to be certain is valid
+                if (strTemp.Contains("\"{\""))
+                {
+                    strTemp = strTemp.Replace("\"{\"", "{\"");
+                }
+
+                if (strTemp.Contains("\"}\""))
+                {
+                    strTemp = strTemp.Replace("\"}\"", "\"}");
+                }
+
+                if (strTemp.Contains("}\""))
+                {
+                    strTemp = strTemp.Replace("}\"","}");
+                }
+
+                return strTemp;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error CleanJSON(string): " + ex.Message);
+                return strTemp;
+            }
+        }
+
+        public static string Base64Encode(string plainText)
+        {
+            try
+            {
+                byte[] plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+                return System.Convert.ToBase64String(plainTextBytes);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string Base64Encode(string): String: {0} | Message: {1}",plainText,ex.Message);
+                return plainText;
+            }
+        }
+        
+        public static string Base64Decode(string base64EncodedData)
+        {
+            try
+            {
+                byte[] base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+                string a = System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+                return a;//System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string Base64Decode(string): String: {0} | Message: {1}", base64EncodedData, ex.Message);
+                return base64EncodedData;
+            }
+        }
     }
 
     public static class StringExtensionMethods
@@ -641,5 +784,16 @@ namespace Interfaz.Utilities
 
             return Source.Remove(place, Find.Length).Insert(place, Replace);
         }
+
+        /*public static string ToJson(this Vector3 vector3)
+        {
+            try
+            {
+                return "";
+            }
+            catch(Exception ex) {
+                return "";
+            }
+        }*/
     }
 }

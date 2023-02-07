@@ -35,12 +35,12 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error ToJson(): " + ex.Message);
+                Console.WriteLine("Error (ShotPosUpdate) ToJson(): " + ex.Message);
                 return string.Empty;
             }
         }
 
-        public Shot FromJson(string json)
+        public ShotPosUpdate FromJson(string json)
         {
             try
             {
@@ -54,22 +54,35 @@ namespace Interfaz.Models
 
                 //AllowTrailingCommas = true,
                 //ReadCommentHandling = JsonCommentHandling.Skip,
-                Shot shot = System.Text.Json.JsonSerializer.Deserialize<Shot>(json, serializeOptions);
+                ShotPosUpdate shot = System.Text.Json.JsonSerializer.Deserialize<ShotPosUpdate>(json, serializeOptions);
                 //this = shot;
 
                 return shot;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error ShotPosUpdate FromJson(): " + ex.Message);
-                return default(Shot);
+                Console.WriteLine("Error (ShotPosUpdate) FromJson(): " + ex.Message);
+                return default(ShotPosUpdate);
             }
         }
 
-        public static Shot CreateFromJson(string json)
+        public static ShotPosUpdate CreateFromJson(string json)
         {
-            Shot shot = new();
-            return shot.FromJson(json);
+            try
+            {
+                if(string.IsNullOrWhiteSpace(json))
+                {
+                    new ShotPosUpdate();
+                }
+
+                ShotPosUpdate shot = new();
+                return shot.FromJson(json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error (ShotPosUpdate) CreateFromJson(): " + ex.Message);
+                return default(ShotPosUpdate);
+            }
         }
     }
 
@@ -81,19 +94,38 @@ namespace Interfaz.Models
             try
             {
                 //TODO: Corregir, testear y terminar
-                strJson = reader.GetString();
+                JsonDocument jsonDoc = JsonDocument.ParseValue(ref reader);
+                strJson = jsonDoc.RootElement.GetRawText();
+               
+                if(reader.Read())
+                {
+                    strJson = reader.GetString();
+                }
+                //strJson = reader.GetString();
+
+                JsonSerializerOptions serializeOptions = new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new Vector3Converter()
+                    }
+                };
 
                 ShotPosUpdate shot = new ShotPosUpdate();
-                string[] a = UtilityAssistant.CutJson(strJson);
-
+                string[] a = strJson.Split(",", StringSplitOptions.RemoveEmptyEntries);
+                //string[] a = UtilityAssistant.CutJson(strJson);
+                a[0] = a[0].Substring(a[0].IndexOf(":") + 1).Replace("\"", "");
+                a[1] = "\""+(a[1].Substring(a[1].IndexOf(":") + 1).Replace("\"", "").Replace("}", "\"")); //it sets the " in the replacement to 
                 shot.Id = Convert.ToInt32(a[0]);
-                shot.Pos = UtilityAssistant.XmlToClass<SerializedVector3>(a[1]).ConvertToVector3();
+                //shot.Pos = UtilityAssistant.XmlToClass<SerializedVector3>(a[1]).ConvertToVector3();
+                string tmpString = "{ \"a\":"+a[1]+"}";
+                shot.Pos = System.Text.Json.JsonSerializer.Deserialize<Vector3>(tmpString, serializeOptions); // System.Text.Json.JsonSerializer.Deserialize<SerializedVector3>(a[1]).ConvertToVector3();
 
                 return shot;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: (ShotUpdateConverter) Read(): {0} Message: {1}", strJson, ex.Message);
+                Console.WriteLine("\n\nError: (ShotUpdateConverter) Read(): {0} Message: {1}", strJson, ex.Message);
                 return default(ShotPosUpdate);
             }
         }
@@ -102,11 +134,21 @@ namespace Interfaz.Models
         {
             try
             {
+
+                JsonSerializerOptions serializeOptions = new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new Vector3Converter()
+                    }
+                };
+
                 //TODO: Corregir, testear y terminar
                 string Id = "\"" + shot.Id + "\"";
-                string Pos = new SerializedVector3(shot.Pos).ToXML();
+                //string Pos = new SerializedVector3(shot.Pos).ToXML();
+                string Pos = System.Text.Json.JsonSerializer.Serialize<Vector3>(shot.Pos,serializeOptions); //new SerializedVector3(shot.Pos).ToJson();
 
-                string resultJson = "{Id:" + Id + ", Pos:" + Pos + "}";
+                string resultJson = "{\"Id\":" + Id + ", \"Pos\":" + Pos + "}";
                 writer.WriteStringValue(resultJson);
             }
             catch (Exception ex)
@@ -124,7 +166,8 @@ namespace Interfaz.Models
             {
                 //TODO: Corregir, testear y terminar
                 string Id = "\"" + shot.Id + "\"";
-                string Pos = new SerializedVector3(shot.Pos).ToXML();
+                //string Pos = new SerializedVector3(shot.Pos).ToXML();
+                string Pos = new SerializedVector3(shot.Pos).ToJson(SerializedVector3.TextOrNewtonsoft.Newtonsoft);
 
                 string resultJson = "{Id:" + Id + ", Pos:" + Pos + "}";
                 writer.WriteValue(resultJson);
@@ -150,7 +193,8 @@ namespace Interfaz.Models
                 ShotPosUpdate shot = new ShotPosUpdate();
                 string[] a = UtilityAssistant.CutJson(strJson);
                 shot.Id = Convert.ToInt32(a[0]);
-                shot.Pos = UtilityAssistant.XmlToClass<SerializedVector3>(a[1]).ConvertToVector3();
+                //shot.Pos = UtilityAssistant.XmlToClass<SerializedVector3>(a[1]).ConvertToVector3();
+                shot.Pos = JsonConvert.DeserializeObject<SerializedVector3>(a[1]).ConvertToVector3();
 
                 return shot;
             }

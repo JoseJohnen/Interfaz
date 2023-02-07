@@ -6,16 +6,11 @@ namespace Interfaz.Models
 {
     public struct ShotTotalState
     {
-
-        public List<Shot> l_shotsCreated = new List<Shot>();
         public List<ShotPosUpdate> l_shotsPosUpdates = new List<ShotPosUpdate>();
-        public List<ShotState> l_shotsStates = new List<ShotState>();
-
+        
         public ShotTotalState()
         {
-            l_shotsCreated = new List<Shot>();
             l_shotsPosUpdates = new List<ShotPosUpdate>();
-            l_shotsStates = new List<ShotState>();
         }
 
         public string ToJson()
@@ -70,9 +65,7 @@ namespace Interfaz.Models
         {
             try
             {
-                if (Regex.Matches(json, "l_shotsCreated").Count != 1 ||
-                    Regex.Matches(json, "l_shotsPosUpdates").Count != 1 ||
-                    Regex.Matches(json, "l_shotsStates").Count != 1 ||
+                /*if (Regex.Matches(json, "l_shotsPosUpdates").Count != 1 ||
                     (Regex.Matches(json, "{").Count != Regex.Matches(json, "}").Count) ||
                     (Regex.Matches(json, @"\[").Count != Regex.Matches(json, "]").Count) 
                     )
@@ -82,7 +75,7 @@ namespace Interfaz.Models
                     Console.WriteLine("¡Error prevented! (ShotTotalState) FromJson(): Defective Json: "+json);
                     Console.ResetColor();
                     return default(ShotTotalState);
-                }
+                }*/
 
                 JsonSerializerSettings serializeOptions = new JsonSerializerSettings
                 {

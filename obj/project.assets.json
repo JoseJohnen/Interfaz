@@ -55,7 +55,7 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\jjohn\\.nuget\\packages\\": {},
+    "C:\\Users\\Jose Johnen\\.nuget\\packages\\": {},
     "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
@@ -64,22 +64,20 @@
       "projectUniqueName": "E:\\Cod_Pers\\Visual_Studio\\Interfaz\\Interfaz.csproj",
       "projectName": "Interfaz",
       "projectPath": "E:\\Cod_Pers\\Visual_Studio\\Interfaz\\Interfaz.csproj",
-      "packagesPath": "C:\\Users\\jjohn\\.nuget\\packages\\",
+      "packagesPath": "C:\\Users\\Jose Johnen\\.nuget\\packages\\",
       "outputPath": "E:\\Cod_Pers\\Visual_Studio\\Interfaz\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\jjohn\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "D:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "D:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Users\\Jose Johnen\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "D:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
       ],
       "originalTargetFrameworks": [
         "net6.0"
       ],
       "sources": {
-        "D:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "D:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
@@ -120,7 +118,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "D:\\Program Files\\dotnet\\sdk\\6.0.403\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "D:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
       }
     }
   }
