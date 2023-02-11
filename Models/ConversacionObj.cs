@@ -136,14 +136,15 @@ namespace Interfaz.Models
                     this.L_Bullets_to_create = new List<Shot>();
                 }
 
+                string tmpItem = string.Empty;
                 foreach (string item in this.l_bullets_to_create)
                 {
-                    UtilityAssistant.CleanJSON(item);
                     if(string.IsNullOrWhiteSpace(item))
                     {
                         continue;
                     }
-                    this.L_Bullets_to_create.Add(Shot.CreateFromJson(item));
+                    tmpItem = UtilityAssistant.CleanJSON(item);
+                    this.L_Bullets_to_create.Add(Shot.CreateFromJson(tmpItem));
                 }
                 return this.L_Bullets_to_create;
             }
@@ -163,14 +164,15 @@ namespace Interfaz.Models
                     this.L_Bullets_to_update = new List<ShotPosUpdate>();
                 }
 
+                string tmpItem = string.Empty;
                 foreach (string item in this.l_bullets_to_update)
                 {
-                    UtilityAssistant.CleanJSON(item);
                     if (string.IsNullOrWhiteSpace(item))
                     {
                         continue;
                     }
-                    this.L_Bullets_to_update.Add(ShotPosUpdate.CreateFromJson(item));
+                    tmpItem = UtilityAssistant.CleanJSON(item);
+                    this.L_Bullets_to_update.Add(ShotPosUpdate.CreateFromJson(tmpItem));
                 }
                 return this.L_Bullets_to_update;
             }
@@ -190,14 +192,15 @@ namespace Interfaz.Models
                     this.L_Bullets_to_change_state = new List<ShotState>();
                 }
 
+                string tmpItem = string.Empty;
                 foreach (string item in this.l_bullets_to_change_state)
                 {
-                    UtilityAssistant.CleanJSON(item);
                     if (string.IsNullOrWhiteSpace(item))
                     {
                         continue;
                     }
-                    this.L_Bullets_to_change_state.Add(ShotState.CreateFromJson(item));
+                    tmpItem = UtilityAssistant.CleanJSON(item);
+                    this.L_Bullets_to_change_state.Add(ShotState.CreateFromJson(tmpItem));
                 }
                 return this.L_Bullets_to_change_state;
             }
@@ -247,7 +250,8 @@ namespace Interfaz.Models
                 if(!string.IsNullOrWhiteSpace(str_bullets_to_create))
                 {
                     //Array.Clear(strStrArr, 0, strStrArr.Length);
-                    strStrArr = str_bullets_to_create.Split("\",\"");
+                    str_bullets_to_create = str_bullets_to_create.Replace("},{", "}|°|{");
+                    strStrArr = str_bullets_to_create.Split("|°|");
                     foreach (string item1 in strStrArr)
                     {
                         conObj.l_bullets_to_create.Add(item1);
@@ -274,13 +278,15 @@ namespace Interfaz.Models
                 }
 
                 string strTemp3 = strJsonArray[2].Substring(strJsonArray[2].IndexOf("l_bullets_to_change_state")).Replace("l_bullets_to_change_state", "");
-                strTemp3 = strTemp3.Substring(4).Replace("[", "").Replace("]", "");
+                strTemp3 = strTemp3.Substring(4).Replace("[", "").Replace("]}", "");
                 string str_bullets_to_change_state = strTemp3;
 
                 if (!string.IsNullOrWhiteSpace(str_bullets_to_change_state))
                 {
                     //Array.Clear(strStrArr, 0, strStrArr.Length);
-                    strStrArr3 = str_bullets_to_change_state.Split("\",\"");
+                    //strStrArr3 = str_bullets_to_change_state.Split("\",\"");
+                    str_bullets_to_change_state = str_bullets_to_change_state.Replace("},{", "}|°|{");
+                    strStrArr3 = str_bullets_to_change_state.Split("|°|");
                     foreach (string item3 in strStrArr3)
                     {
                         conObj.l_bullets_to_change_state.Add(item3);

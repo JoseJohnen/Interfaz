@@ -144,7 +144,8 @@ namespace Interfaz.Models
                 if (a[3] != null)
                 {
                     string fd = a[3].Substring(a[3].IndexOf(":")+1);
-                    shot.OrPos = System.Text.Json.JsonSerializer.Deserialize<Vector3>(fd, serializeOptions); //SerializedVector3.FromJson(a[3].Substring(a[3].IndexOf(":") + 1)).ConvertToVector3();
+                    shot.OrPos = Vector3Converter.Converter(fd);
+                    //shot.OrPos = System.Text.Json.JsonSerializer.Deserialize<Vector3>(fd, serializeOptions); //SerializedVector3.FromJson(a[3].Substring(a[3].IndexOf(":") + 1)).ConvertToVector3();
                 }
                 else
                 {
@@ -155,7 +156,7 @@ namespace Interfaz.Models
                 if (a[4] != null)
                 {
                     string fd = a[4].Substring(a[4].IndexOf(":") + 1);
-                    shot.WPos = System.Text.Json.JsonSerializer.Deserialize<Vector3>(fd, serializeOptions);
+                    shot.WPos = Vector3Converter.Converter(fd);//System.Text.Json.JsonSerializer.Deserialize<Vector3>(fd, serializeOptions);
                 }
                 else
                 {
@@ -166,7 +167,7 @@ namespace Interfaz.Models
                 if (a[5] != null)
                 {
                     string fd = a[5].Substring(a[5].IndexOf(":") + 1);
-                    shot.Mdf = System.Text.Json.JsonSerializer.Deserialize<Vector3>(fd, serializeOptions);
+                    shot.Mdf = Vector3Converter.Converter(fd);//System.Text.Json.JsonSerializer.Deserialize<Vector3>(fd, serializeOptions);
                 }
                 else
                 {

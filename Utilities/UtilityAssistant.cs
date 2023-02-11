@@ -633,7 +633,7 @@ namespace Interfaz.Utilities
 
                 if (strTemp.IndexOf("{") > 1)
                 {
-                    Console.WriteLine("Entro a indexOf>1");
+                    //Console.WriteLine("Entro a indexOf>1");
                     strSecTemp = strTemp.Substring(0, strTemp.IndexOf("{"));
                     strTemp = strTemp.Replace(strSecTemp, "");
                 }
@@ -642,7 +642,7 @@ namespace Interfaz.Utilities
                 {
                     if ((strTemp.Length - strTemp.LastIndexOf("}")) > 2)
                     {
-                        Console.WriteLine("Entro a LastIndexOf>2");
+                        //Console.WriteLine("Entro a LastIndexOf>2");
                         strTemp = strTemp.Replace(strTemp.Substring(strTemp.LastIndexOf("}") + 1), "");
                     }
                 }
@@ -692,7 +692,7 @@ namespace Interfaz.Utilities
                     strTemp = strTemp.Replace("\"}\"", "\"}");
                 }
 
-                if(strTemp.Contains("},]"))
+                if (strTemp.Contains("},]"))
                 {
                     strTemp = strTemp.Replace("},]", "}]");
                 }
@@ -721,7 +721,7 @@ namespace Interfaz.Utilities
 
                 if (strTemp.Contains("}\""))
                 {
-                    strTemp = strTemp.Replace("}\"","}");
+                    strTemp = strTemp.Replace("}\"", "}");
                 }
 
                 return strTemp;
@@ -742,23 +742,73 @@ namespace Interfaz.Utilities
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error string Base64Encode(string): String: {0} | Message: {1}",plainText,ex.Message);
+                Console.WriteLine("Error string Base64Encode(string): String: {0} | Message: {1}", plainText, ex.Message);
                 return plainText;
             }
         }
-        
+
         public static string Base64Decode(string base64EncodedData)
         {
             try
             {
                 byte[] base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
                 string a = System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+
+                if (a.Contains("="))
+                {
+                    while (a.Contains("==") || (a.LastIndexOf("=") == (a.Length - 1)))
+                    {
+                        a = Utilities.UtilityAssistant.Base64Decode(a);
+                    }
+                }
+
                 return a;//System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error string Base64Decode(string): String: {0} | Message: {1}", base64EncodedData, ex.Message);
                 return base64EncodedData;
+            }
+        }
+
+        public static bool TryBase64Encode(string plainText, out string result)
+        {
+            try
+            {
+                byte[] plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+                result = System.Convert.ToBase64String(plainTextBytes);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string TryBase64Encode(string): String: {0} | Message: {1}", plainText, ex.Message);
+                result = plainText;
+                return false;
+            }
+        }
+
+        public static bool TryBase64Decode(string base64EncodedData, out string result)
+        {
+            try
+            {
+                byte[] base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+                result = System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+
+                if (result.Contains("="))
+                {
+                    while (result.Contains("==") || (result.LastIndexOf("=") == (result.Length - 1)))
+                    {
+                        result = Utilities.UtilityAssistant.Base64Decode(result);
+                    }
+                }
+
+                return true;//System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+            }
+            catch (Exception ex)
+            {                
+                Console.WriteLine("Error string Base64Decode(string): String: {0} | Message: {1}", base64EncodedData, ex.Message);
+                result = base64EncodedData;
+                return false;
             }
         }
     }

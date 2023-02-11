@@ -10,21 +10,24 @@ namespace Interfaz.Models
 
     public class Message
     {
-        public static ConcurrentDictionary<uint, Message> dic_ActiveMessages = new ConcurrentDictionary<uint, Message>();
+        public static ConcurrentDictionary<string, Message> dic_ActiveMessages = new ConcurrentDictionary<string, Message>();
 
-        private string text = string.Empty;
+        [JsonInclude]
+        public string text = string.Empty;
 
         private bool IsBlockMultiMessage = false;
 
+
+        [JsonIgnore]
         public string Text
         {
             get
             {
                 //Console.WriteLine("b: "+b);
-                Console.BackgroundColor = ConsoleColor.Red;
+                /*Console.BackgroundColor = ConsoleColor.Red;
                 Console.ForegroundColor = ConsoleColor.Black;
                 Console.WriteLine("\n\nSize of the message is: " + text.Length + " total");
-                Console.ResetColor();
+                Console.ResetColor();*/
                 return text;
             }
             set
@@ -39,46 +42,46 @@ namespace Interfaz.Models
                 int remanent = 150;
                 if (tempText.Length > remanent && !this.IsBlockMultiMessage)
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.BackgroundColor = ConsoleColor.Green;
-                    Console.WriteLine("this.Length: "+ this.Length);
-                    Console.ResetColor();
-
-                    //int single = Convert.ToInt32(MathF.Ceiling(tempText.Length / 150));
-                    string bufferTotal = tempText;
-                    //string bufferTemporal = string.Empty;
-                    //List<string> pieces = new List<string>();
+                    ConcurrentDictionary<string, Message> dic_newMessages = new ConcurrentDictionary<string, Message>();
 
                     uint idUsedRef = 0;
-                    if(dic_ActiveMessages.Count >= 1)
+                    if (dic_ActiveMessages.Count >= 1)
                     {
-                        this.IdMsg = 1;
                         foreach (Message msgItem in dic_ActiveMessages.Values)
                         {
                             idUsedRef = msgItem.idRef;
                         }
                     }
                     idUsedRef++;
-                    this.idRef = idUsedRef;
 
                     //Preparar mensaje que indica total
-                    //Message msg = Message.CreateMessage();
-                    text = UtilityAssistant.Base64Encode("LG:" + this.Length);
-                    dic_ActiveMessages.TryAdd(this.IdMsg, this);
+                    string textFirstMessage = tempText.Substring(0, remanent);
 
-                    uint i = 2;
-                    while (!string.IsNullOrWhiteSpace(bufferTotal))
+                    //Creación de mensaje 2 en adelante
+                    uint i = 1;
+                    tempText = tempText.Replace(tempText.Substring(0, remanent), "");
+                    while (!string.IsNullOrWhiteSpace(tempText))
                     {
-                        if(bufferTotal.Length < remanent)
-                        {
-                            remanent = bufferTotal.Length;
-                        }
-                        Message mgs = Message.CreateMessage(bufferTotal.Substring(0, remanent), true);
-                        mgs.IdMsg = i;
-                        mgs.idRef = idUsedRef;
-                        dic_ActiveMessages.TryAdd(mgs.IdMsg, mgs);
-                        bufferTotal = bufferTotal.Replace(bufferTotal.Substring(0, remanent), "");
                         i++;
+                        if (tempText.Length < remanent)
+                        {
+                            remanent = tempText.Length;
+                        }
+                        Message mgs = Message.CreatePartMessage(tempText.Substring(0, remanent), idUsedRef, i);
+                        dic_newMessages.TryAdd(string.Concat(mgs.IdMsg, "|", mgs.IdRef), mgs);
+                        tempText = tempText.Replace(tempText.Substring(0, remanent), "");
+                    }
+
+                    //Creación de mensaje 1
+                    this.idRef = idUsedRef;
+                    this.IdMsg = 1;
+                    //Este text manda: cantidad total de mensajes || length del primer mensaje || primera pieza del mensaje
+                    this.text = i + "||" + textFirstMessage.Length + "||" + UtilityAssistant.Base64Encode(textFirstMessage);
+                    dic_newMessages.TryAdd(string.Concat(this.IdMsg, "|", this.IdRef), this);
+
+                    foreach (KeyValuePair<string, Message> item in dic_newMessages)
+                    {
+                        dic_ActiveMessages.TryAdd(item.Key, item.Value);
                     }
                 }
                 else
@@ -92,37 +95,48 @@ namespace Interfaz.Models
             }
         }
 
+        [JsonIgnore]
         public string TextOriginal
         {
             get
             {
-                if (string.IsNullOrWhiteSpace(text))
-                {
-                    return text;
-                }
                 string a = text;
-                bool ifSeveral = false;
-                if (a.Contains("="))
+                try
                 {
-                    while (a.Contains("==") || (a.LastIndexOf("=") == (a.Length - 1)))
+                    if (string.IsNullOrWhiteSpace(text))
                     {
-                        ifSeveral = true;
-                        a = Utilities.UtilityAssistant.Base64Decode(a);
-                        //Console.WriteLine("a: "+a);
+                        return text;
                     }
-                }
 
-                string b = a;//Utilities.UtilityAssistant.Base64Decode(text);
-                if (!ifSeveral)
-                {
-                    b = Utilities.UtilityAssistant.Base64Decode(text);
+                    if (a.Contains("||"))
+                    {
+                        string[] idkfa = a.Split("||");
+                        if (idkfa.Length > 2)
+                        {
+                            a = idkfa[2];
+                        }
+                    }
+
+                    string resultTryDecode = string.Empty;
+                    if (UtilityAssistant.TryBase64Decode(a, out resultTryDecode))
+                    {
+                        a = resultTryDecode;
+                    }
+
+                    return a;
                 }
-                //Console.WriteLine("b: "+b);
-                Console.BackgroundColor = ConsoleColor.Red;
-                Console.ForegroundColor = ConsoleColor.Black;
-                Console.WriteLine("\n\nSize of the message is: " + b.Length + " total");
-                Console.ResetColor();
-                return b;
+                catch (Exception ex)
+                {
+                    Console.BackgroundColor = ConsoleColor.Red;
+                    Console.ForegroundColor = ConsoleColor.Black;
+                    Console.WriteLine("\n\nError Property TextOriginal Message: " + ex.Message);
+                    Console.ResetColor();
+                    return a;
+                }
+            }
+            private set
+            {
+                text = value;
             }
         }
 
@@ -148,7 +162,7 @@ namespace Interfaz.Models
             }
         }
 
-        public uint Length { get => length; internal set => length = value; }
+        public uint Length { get => length; private set => length = value; }
         public uint IdMsg { get => idMsg; set => idMsg = value; }
 
         public StatusMessage Status = StatusMessage.NonRelevantUsage;
@@ -164,7 +178,7 @@ namespace Interfaz.Models
         private Message(string text)
         {
             IdMsg = 0;
-            Text = Utilities.UtilityAssistant.Base64Encode(text);
+            Text = text;
             idRef = 0;
             Status = StatusMessage.NonRelevantUsage;
         }
@@ -172,7 +186,7 @@ namespace Interfaz.Models
         private Message(uint idForRef, string text)
         {
             IdMsg = 0;
-            Text = Utilities.UtilityAssistant.Base64Encode(text);
+            Text = text;
             Status = StatusMessage.NonRelevantUsage;
             IdRef = idForRef;
         }
@@ -182,11 +196,25 @@ namespace Interfaz.Models
             try
             {
                 Message msg = new Message();
-                if(BlockChainOfMessages)
+                if (BlockChainOfMessages)
                 {
                     msg.IsBlockMultiMessage = true; //it start false, therefore is unnecesarrely to change it if somebody add it as a false
                 }
-                msg.Text = UtilityAssistant.CleanJSON(text);
+                string marker = string.Empty;
+                if (text.Length >= 4)
+                {
+                    if (text.Substring(0, 4).Contains(":"))
+                    {
+                        marker = text.Substring(0,text.IndexOf(":")+1);
+                        text = text.ReplaceFirst(marker,"");
+                    }
+                }
+                string jsonAProc = UtilityAssistant.CleanJSON(text);
+                if(!string.IsNullOrWhiteSpace(marker))
+                {
+                    jsonAProc = marker + jsonAProc;
+                }
+                msg.text = UtilityAssistant.Base64Encode(jsonAProc);
                 if (idForRef != 0)
                 {
                     msg.idRef = idForRef;
@@ -200,15 +228,166 @@ namespace Interfaz.Models
             }
         }
 
+        public static Message CreatePartMessage(string text, uint idForRef = 0, uint idMessage = 0)
+        {
+            try
+            {
+                Message msg = new Message();
+                msg.text = text;
+                if (idForRef != 0)
+                {
+                    msg.idRef = idForRef;
+                }
+                if (idMessage != 0)
+                {
+                    msg.idMsg = idMessage;
+                }
+                return msg;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Message CreatePartMessage: " + ex.Message);
+                return new Message();
+            }
+        }
+
+        public static Message ConsolidateMessages(Message nwMsg)
+        {
+            try
+            {
+                Message.dic_ActiveMessages.TryAdd(string.Concat(nwMsg.IdMsg, "|", nwMsg.IdRef), nwMsg);
+                List<Message> l_messages = Message.dic_ActiveMessages.Where(c => c.Value.IdRef == nwMsg.IdRef).Select(c => c.Value).ToList();
+                Message frsMsg = l_messages.Where(c => c.IdMsg == 1).FirstOrDefault();
+
+                if (frsMsg != null)
+                {
+                    int tamanoTotal = Convert.ToInt32(frsMsg.length);
+                    l_messages = l_messages.Distinct(new DistinctMessageComparer()).ToList();
+                    //Obtener total de mensajes relevantes
+                    l_messages = l_messages.Where(c => c.IdRef == nwMsg.IdRef).ToList();
+
+                    //Sumar total Length
+                    int sumTotal = (int)l_messages.Where(c => c.idMsg != 1).Sum(c => c.Length);
+                    int messageTotalAmmount = 0;
+                    int firstMessageRealLength = (int)frsMsg.ObtainActualLengthAndMessageAmmount(out messageTotalAmmount);
+                    //END sumart total length
+
+                    if (messageTotalAmmount == l_messages.Count)
+                    {
+                        string textRecopilado = string.Empty;
+                        int sumTotalPlusFirst = 0;
+
+                        foreach (Message m in l_messages.OrderBy(c => c.IdMsg))
+                        {
+                            if (string.Concat(m.IdMsg, "|", m.IdRef) == string.Concat(1, "|", m.IdRef))
+                            {
+                                string stringRemovedLength = frsMsg.RemoveLengthFromText();
+                                textRecopilado = stringRemovedLength;
+                                sumTotalPlusFirst += firstMessageRealLength;
+                                continue;
+                            }
+                            textRecopilado += m.TextOriginal;
+                            sumTotalPlusFirst += m.TextOriginal.Length;
+                        }
+
+                        Message msgEmpty = new Message();
+                        foreach (Message item in l_messages)
+                        {
+                            Message.dic_ActiveMessages.Remove(string.Concat(item.IdMsg, "|", item.IdRef), out msgEmpty);
+                        }
+                        return Message.CreateMessage(textRecopilado, true);
+
+                    }
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Message ConsolidateMessages: " + ex.Message);
+                return new Message();
+            }
+        }
+
+        public uint ObtainActualLengthAndMessageAmmount(out int messageTotalAmmount)
+        {
+            messageTotalAmmount = 0;
+            try
+            {
+                if (this.TextOriginal.Contains("||"))
+                {
+                    string[] parts = this.TextOriginal.Split("||");
+                    int actualLength = 0;
+                    //Not actual length BUT using the same memory slot for passing the data, to save a little ram
+                    if (int.TryParse(parts[0], out actualLength))
+                    {
+                        messageTotalAmmount = actualLength;
+                    }
+                    if (int.TryParse(parts[1], out actualLength))
+                    {
+                        this.IsBlockMultiMessage = true;
+                        string specificString = parts[2];
+                        string DecodedNewBaseText = string.Empty;
+                        string[] strTemp = new string[1];
+                        if (UtilityAssistant.TryBase64Decode(specificString, out DecodedNewBaseText))
+                        {
+                            strTemp = DecodedNewBaseText.Split("||");
+                        }
+                        else
+                        {
+                            strTemp[0] = specificString;
+                        }
+                        //byte[] base64EncodedBytes = System.Convert.FromBase64String(specificString);
+                        //string DecodedNewBaseText = System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+                        //base64EncodedBytes = System.Convert.FromBase64String(strTemp[1]);
+                        if (strTemp.Length == 1)
+                        {
+                            this.text = strTemp[0];//System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+                        }
+                        else
+                        {
+                            this.text = strTemp[2];//System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+                        }
+                        return (uint)actualLength;
+                    }
+                }
+                return this.length;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error uint ObtainActualLengthAndMessageAmmount(out int messageTotalAmmount): " + ex.Message);
+                return this.length;
+            }
+        }
+
+        public string RemoveLengthFromText()
+        {
+            string[] parts = this.TextOriginal.Split("||");
+            try
+            {
+                if (parts.Length == 2)
+                {
+                    this.IsBlockMultiMessage = true;
+                    this.text = parts[1];
+                    return this.text;
+                }
+                return parts[0];
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string RemoveLengthFromText: " + ex.Message);
+                return parts[0];
+            }
+        }
+
         public string ToJson()
         {
             try
             {
-                JsonSerializerOptions options = new JsonSerializerOptions()
+                /*JsonSerializerOptions options = new JsonSerializerOptions()
                 {
-                    IgnoreReadOnlyProperties = true
-                };
-                string result = System.Text.Json.JsonSerializer.Serialize(this, options);
+                    IgnoreReadOnlyProperties = true,
+                };*/
+                string result = System.Text.Json.JsonSerializer.Serialize(this);//, options);
                 /*length = (uint)this.ToJson().Length;
                 int lngCount = length.ToString().Length;
                 length = length + (uint)lngCount;*/
@@ -227,11 +406,11 @@ namespace Interfaz.Models
             try
             {
                 txt = UtilityAssistant.CleanJSON(txt);
-                JsonSerializerOptions options= new JsonSerializerOptions()
+                /*JsonSerializerOptions options = new JsonSerializerOptions()
                 {
                     IgnoreReadOnlyProperties = true
-                };
-                return System.Text.Json.JsonSerializer.Deserialize<Message>(txt, options);
+                };*/
+                return System.Text.Json.JsonSerializer.Deserialize<Message>(txt);//, options);
             }
             catch (Exception ex)
             {
@@ -360,9 +539,14 @@ namespace Interfaz.Models
                     return false;
                 }
 
-                if (stMessage.Status == StatusMessage.Executed)
+                return false;
+                //TODO: Este método esta en desuso y deshabilitado porque: 1) ya no se trabajan los mensajes así, se cambió la forma y el método
+                //se volvió redundante
+                //2) después de ese cambio, mas adelante durante el desarrollo, se cambió la naturaleza del key, así que ya no sirve y corregir el 
+                //método de momento no se ve relevante, por eso se comento todo el interior
+                /*if (stMessage.Status == StatusMessage.Executed)
                 {
-                    if (Message.dic_ActiveMessages.Remove(stMessage.idRef, out msg))
+                    if (Message.dic_ActiveMessages.Remove(string.Concat(stMessage.IdMsg, "|", stMessage.IdRef), out msg))
                     {
                         outMessage = msg;
                         return true;
@@ -390,7 +574,7 @@ namespace Interfaz.Models
                         }
                     }
                     return false;
-                }
+                }*/
             }
             catch (Exception ex)
             {

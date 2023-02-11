@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ namespace Interfaz.Utilities
 
                 //string[] strArray = strJson.Replace("{","").Replace("}","").Split(',');
 
-                Vector3 vector3 = new Vector3((float)Convert.ToDouble(a),(float)Convert.ToDouble(b), (float)Convert.ToDouble(c));
+                Vector3 vector3 = new Vector3(Convert.ToSingle(a),Convert.ToSingle(b), Convert.ToSingle(c));
                 return vector3;
             }
             catch (Exception ex)
@@ -57,6 +58,32 @@ namespace Interfaz.Utilities
             catch (Exception ex)
             {
                 Console.WriteLine("Error: (Vector3Converter) Write(): " + ex.Message);
+            }
+        }
+
+        public static Vector3 Converter(string vector3Json)
+        {
+            string strJson = vector3Json;
+            try
+            {
+                //TODO: Corregir, testear y terminar
+                //strJson = reader.GetString();
+                strJson = strJson.Replace("\"", "").Replace("{a:", "").Replace("{ a:", "").Replace("}", "").Trim();
+                string[] secondStep = strJson.Replace("<", "").Replace("u003C", "").Replace(">", "").Replace("u003E", "").Replace("\\", "").Replace("\"", "").Split("|");
+
+                string a = secondStep[0].Replace(".", ",").Trim();
+                string b = secondStep[1].Replace(".", ",").Trim();
+                string c = secondStep[2].Replace(".", ",").Trim();
+
+                //string[] strArray = strJson.Replace("{","").Replace("}","").Split(',');
+
+                Vector3 vector3 = new Vector3((float)Convert.ToDouble(a), (float)Convert.ToDouble(b), (float)Convert.ToDouble(c));
+                return vector3;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: (Vector3Converter) Read(): {0} Message: {1}", strJson, ex.Message);
+                return default(Vector3);
             }
         }
     }

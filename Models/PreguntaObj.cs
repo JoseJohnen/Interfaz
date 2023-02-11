@@ -94,10 +94,26 @@ namespace Interfaz.Models
 
                 string[] strJsonArr = new string[1];
                 strJsonArr[0] = strJson;
-                if(strJson.Contains("PR:"))
+                if (strJson.Contains("PR:"))
                 {
                     strJsonArr = strJson.Split("PR:", StringSplitOptions.RemoveEmptyEntries);
                 }
+
+                string tmpItem = strJsonArr[0];
+                string[] tmpArrItm = new string[1];
+
+                tmpItem = tmpItem.Substring(tmpItem.IndexOf("[") + 1);
+                tmpItem = tmpItem.Substring(0, tmpItem.IndexOf("]"));
+                tmpArrItm = tmpItem.Split(",", StringSplitOptions.RemoveEmptyEntries);
+                PreguntaObj preguntaObj = new PreguntaObj();
+                if (tmpArrItm.Length > 0)
+                {
+                    foreach (string it in tmpArrItm)
+                    {
+                        preguntaObj.l_id_bullets_preguntando.Add(Convert.ToInt32(it));
+                    }
+                }
+
 
                 /*PreguntaObj shot = new PreguntaObj();
                 string[] a = UtilityAssistant.CutJson(strJson);
@@ -105,7 +121,7 @@ namespace Interfaz.Models
                 shot.Id = Convert.ToInt32(a[0]);
                 //shot.Pos = UtilityAssistant.XmlToClass<SerializedVector3>(a[1]).ConvertToVector3();
                 shot.Pos = System.Text.Json.JsonSerializer.Deserialize<ConversacionObj>(a[1]).ConvertToVector3();*/
-                PreguntaObj preguntaObj = System.Text.Json.JsonSerializer.Deserialize<PreguntaObj>(strJsonArr[0]);
+                //PreguntaObj preguntaObj = System.Text.Json.JsonSerializer.Deserialize<PreguntaObj>(tmpArrItm[0]);
                 return preguntaObj;
             }
             catch (Exception ex)
@@ -123,7 +139,7 @@ namespace Interfaz.Models
                 int i = 0;
                 int last = 0;
                 strTemp += "\"l_id_bullets_preguntando\" : [";
-                last = conObj.l_id_bullets_preguntando.Count-1;
+                last = conObj.l_id_bullets_preguntando.Count - 1;
                 foreach (int item in conObj.l_id_bullets_preguntando)
                 {
                     strTemp += item;
@@ -134,7 +150,7 @@ namespace Interfaz.Models
                     i++;
                 }
                 strTemp += "]";
-                
+
                 strTemp += "}";
 
                 //TODO: Corregir, testear y terminar
