@@ -805,8 +805,11 @@ namespace Interfaz.Utilities
                 return true;//System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
             }
             catch (Exception ex)
-            {                
-                Console.WriteLine("Error string Base64Decode(string): String: {0} | Message: {1}", base64EncodedData, ex.Message);
+            {
+                Console.BackgroundColor = ConsoleColor.Blue;
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Error string TryBase64Decode(string): String: {0} | Message: {1}", base64EncodedData, ex.Message);
+                Console.ResetColor();
                 result = base64EncodedData;
                 return false;
             }

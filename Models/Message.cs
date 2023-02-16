@@ -1,4 +1,5 @@
-﻿using Interfaz.Utilities;
+﻿using Interfaz.Code.Models;
+using Interfaz.Utilities;
 using System;
 using System.Collections.Concurrent;
 using System.Text.Json;
@@ -10,7 +11,9 @@ namespace Interfaz.Models
 
     public class Message
     {
-        public static ConcurrentDictionary<string, Message> dic_ActiveMessages = new ConcurrentDictionary<string, Message>();
+        public static ConcurrentDictionary<string, Pares<DateTime, Message>> dic_ActiveMessages = new ConcurrentDictionary<string, Pares<DateTime, Message>>();
+
+        public static ConcurrentDictionary<string, Pares<DateTime, Message>> dic_BackUpMessages = new ConcurrentDictionary<string, Pares<DateTime, Message>>();
 
         [JsonInclude]
         public string text = string.Empty;
@@ -23,11 +26,6 @@ namespace Interfaz.Models
         {
             get
             {
-                //Console.WriteLine("b: "+b);
-                /*Console.BackgroundColor = ConsoleColor.Red;
-                Console.ForegroundColor = ConsoleColor.Black;
-                Console.WriteLine("\n\nSize of the message is: " + text.Length + " total");
-                Console.ResetColor();*/
                 return text;
             }
             set
@@ -37,19 +35,28 @@ namespace Interfaz.Models
                     text = value;
                     return;
                 }
-                string tempText = value;
+                string tempText = Utilities.UtilityAssistant.Base64Encode(value);
                 this.Length = (uint)tempText.Length;
                 int remanent = 150;
                 if (tempText.Length > remanent && !this.IsBlockMultiMessage)
                 {
-                    ConcurrentDictionary<string, Message> dic_newMessages = new ConcurrentDictionary<string, Message>();
+                    ConsolidateMessage csMsg = ConsolidateMessage.CreateConsolidateMessage(tempText);
+                    if(csMsg != null)
+                    {
+                        text = Utilities.UtilityAssistant.Base64Encode("CM:" + csMsg.ToJson()); //No se pone TAG porque funciona antes del sistema de TAG
+                    }
+                    else
+                    {
+                        text = "ERROR_:_CONSOLIDATE_MESSAGE_CREATE_ON_MESSAGE_TEXT";
+                    }
+                    /*ConcurrentDictionary<string, Message> dic_newMessages = new ConcurrentDictionary<string, Message>();
 
                     uint idUsedRef = 0;
                     if (dic_ActiveMessages.Count >= 1)
                     {
-                        foreach (Message msgItem in dic_ActiveMessages.Values)
+                        foreach (Pares<DateTime, Message> msgItem in dic_ActiveMessages.Values)
                         {
-                            idUsedRef = msgItem.idRef;
+                            idUsedRef = msgItem.Item2.idRef;
                         }
                     }
                     idUsedRef++;
@@ -76,17 +83,18 @@ namespace Interfaz.Models
                     this.idRef = idUsedRef;
                     this.IdMsg = 1;
                     //Este text manda: cantidad total de mensajes || length del primer mensaje || primera pieza del mensaje
-                    this.text = i + "||" + textFirstMessage.Length + "||" + UtilityAssistant.Base64Encode(textFirstMessage);
+                    this.text = i + "||" + textFirstMessage.Length + "||" + textFirstMessage;
                     dic_newMessages.TryAdd(string.Concat(this.IdMsg, "|", this.IdRef), this);
 
-                    foreach (KeyValuePair<string, Message> item in dic_newMessages)
+                    foreach (KeyValuePair<string, Message> item in dic_newMessages.OrderBy(c => c.Key))
                     {
-                        dic_ActiveMessages.TryAdd(item.Key, item.Value);
-                    }
+                        dic_ActiveMessages.TryAdd(item.Key, new Pares<DateTime, Message>(DateTime.Now, item.Value));
+                        dic_BackUpMessages.TryAdd(item.Key, new Pares<DateTime, Message>(DateTime.Now, item.Value));
+                    }*/
                 }
                 else
                 {
-                    text = Utilities.UtilityAssistant.Base64Encode(tempText);
+                    text = tempText; //Utilities.UtilityAssistant.Base64Encode(tempText);
                 }
                 Console.BackgroundColor = ConsoleColor.Blue;
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -171,7 +179,7 @@ namespace Interfaz.Models
         {
             IdMsg = 0;
             Text = string.Empty;
-            idRef = 0;
+            IdRef = 0;
             Status = StatusMessage.NonRelevantUsage;
         }
 
@@ -179,7 +187,7 @@ namespace Interfaz.Models
         {
             IdMsg = 0;
             Text = text;
-            idRef = 0;
+            IdRef = 0;
             Status = StatusMessage.NonRelevantUsage;
         }
 
@@ -205,16 +213,16 @@ namespace Interfaz.Models
                 {
                     if (text.Substring(0, 4).Contains(":"))
                     {
-                        marker = text.Substring(0,text.IndexOf(":")+1);
-                        text = text.ReplaceFirst(marker,"");
+                        marker = text.Substring(0, text.IndexOf(":") + 1);
+                        text = text.ReplaceFirst(marker, "");
                     }
                 }
                 string jsonAProc = UtilityAssistant.CleanJSON(text);
-                if(!string.IsNullOrWhiteSpace(marker))
+                if (!string.IsNullOrWhiteSpace(marker))
                 {
                     jsonAProc = marker + jsonAProc;
                 }
-                msg.text = UtilityAssistant.Base64Encode(jsonAProc);
+                msg.Text = jsonAProc;//UtilityAssistant.Base64Encode(jsonAProc);
                 if (idForRef != 0)
                 {
                     msg.idRef = idForRef;
@@ -234,6 +242,7 @@ namespace Interfaz.Models
             {
                 Message msg = new Message();
                 msg.text = text;
+                msg.length = (uint)text.Length;
                 if (idForRef != 0)
                 {
                     msg.idRef = idForRef;
@@ -251,17 +260,28 @@ namespace Interfaz.Models
             }
         }
 
+        /*
         public static Message ConsolidateMessages(Message nwMsg)
         {
             try
             {
-                Message.dic_ActiveMessages.TryAdd(string.Concat(nwMsg.IdMsg, "|", nwMsg.IdRef), nwMsg);
-                List<Message> l_messages = Message.dic_ActiveMessages.Where(c => c.Value.IdRef == nwMsg.IdRef).Select(c => c.Value).ToList();
-                Message frsMsg = l_messages.Where(c => c.IdMsg == 1).FirstOrDefault();
+                Message.dic_ActiveMessages.TryAdd(string.Concat(nwMsg.IdMsg, "|", nwMsg.IdRef), new Pares<DateTime, Message>(DateTime.Now, nwMsg));
+                List<Pares<DateTime, Message>> l_dtmessages = Message.dic_ActiveMessages.Where(c => c.Value.Item2.IdRef == nwMsg.IdRef && nwMsg.idRef > 0).Select(c => c.Value).ToList();
+
+                //Si no hay ni se espera ningún otro mensaje de acompañamiento, y el idRef dice que no debería esperar ningún otro
+                //en ese caso es un mensaje único y no necesita consolidación
+                if (l_dtmessages.Count == 0)
+                {
+                    return nwMsg;
+                }
+
+                Message frsMsg = l_dtmessages.Where(c => c.Item2.IdMsg == 1).Select(c => c.Item2).FirstOrDefault();
 
                 if (frsMsg != null)
                 {
                     int tamanoTotal = Convert.ToInt32(frsMsg.length);
+                    List<Message> l_messages = l_dtmessages.Select(c => c.Item2).ToList();
+
                     l_messages = l_messages.Distinct(new DistinctMessageComparer()).ToList();
                     //Obtener total de mensajes relevantes
                     l_messages = l_messages.Where(c => c.IdRef == nwMsg.IdRef).ToList();
@@ -272,6 +292,44 @@ namespace Interfaz.Models
                     int firstMessageRealLength = (int)frsMsg.ObtainActualLengthAndMessageAmmount(out messageTotalAmmount);
                     //END sumart total length
 
+                    if ((messageTotalAmmount > 0 || l_messages.Exists(c => c.idMsg == messageTotalAmmount)) &&
+                        l_messages.Count < messageTotalAmmount)
+                    {
+                        //Then you need to request again some messages than went missing for one reason or another
+                        bool isTimeForRequestedRemainingMsgAlready = false;
+                        foreach (Pares<DateTime, Message> item in l_dtmessages)
+                        {
+                            //timer to determine if we should check that or not
+                            if ((DateTime.Now - item.Item1 > new TimeSpan(0, 0, 1)) && !isTimeForRequestedRemainingMsgAlready)
+                            {
+                                isTimeForRequestedRemainingMsgAlready = true;
+                            }
+                        }
+
+                        List<string> l_missingMessages = new List<string>();
+                        if (isTimeForRequestedRemainingMsgAlready)
+                        {
+                            for (int i = 1; i <= messageTotalAmmount; i++)
+                            {
+                                foreach (Pares<DateTime, Message> item in l_dtmessages.OrderBy(c => c.Item2.idMsg))
+                                {
+                                    if(item.Item2.idMsg == i)
+                                    {
+                                        i++;
+                                        continue;
+                                    }
+                                    l_missingMessages.Add(item.Item2.idMsg + "|"+item.Item2.idRef);
+                                }
+
+                            }
+                            //Request messages
+                            MissingMessages.q_MissingMessages.Enqueue(new MissingMessages(l_missingMessages));
+                        }
+
+                        return null;
+                    }
+
+                    //It can never been 0, so it safe
                     if (messageTotalAmmount == l_messages.Count)
                     {
                         string textRecopilado = string.Empty;
@@ -290,7 +348,7 @@ namespace Interfaz.Models
                             sumTotalPlusFirst += m.TextOriginal.Length;
                         }
 
-                        Message msgEmpty = new Message();
+                        Pares<DateTime, Message> msgEmpty = new Pares<DateTime, Message>(DateTime.Now, new Message());
                         foreach (Message item in l_messages)
                         {
                             Message.dic_ActiveMessages.Remove(string.Concat(item.IdMsg, "|", item.IdRef), out msgEmpty);
@@ -313,9 +371,9 @@ namespace Interfaz.Models
             messageTotalAmmount = 0;
             try
             {
-                if (this.TextOriginal.Contains("||"))
+                if (this.Text.Contains("||"))
                 {
-                    string[] parts = this.TextOriginal.Split("||");
+                    string[] parts = this.Text.Split("||");
                     int actualLength = 0;
                     //Not actual length BUT using the same memory slot for passing the data, to save a little ram
                     if (int.TryParse(parts[0], out actualLength))
@@ -350,7 +408,7 @@ namespace Interfaz.Models
                         return (uint)actualLength;
                     }
                 }
-                return this.length;
+                return (uint)this.Text.Length;
             }
             catch (Exception ex)
             {
@@ -378,6 +436,7 @@ namespace Interfaz.Models
                 return parts[0];
             }
         }
+        */
 
         public string ToJson()
         {
@@ -457,7 +516,7 @@ namespace Interfaz.Models
 
                             if (lastindex == 0)
                             {
-                                if (msg.Text.Contains("MV:")) //MV: Should never enter here, probably, But Just In Case
+                                if (msg.TextOriginal.Contains("MV:")) //MV: Should never enter here, probably, But Just In Case
                                 {
                                     item.l_SendQueueMessages.Enqueue("MS:" + msg.ToJson());
                                 }
@@ -591,14 +650,14 @@ namespace Interfaz.Models
         public bool Equals(Message x, Message y)
         {
             return x.IdMsg == y.IdMsg &&
-                x.Text == y.Text &&
+                x.text == y.text &&
                 x.IdRef == y.IdRef;
         }
 
         public int GetHashCode(Message obj)
         {
             return obj.IdMsg.GetHashCode() ^
-                obj.Text.GetHashCode() ^
+                obj.text.GetHashCode() ^
                 obj.IdRef.GetHashCode();
         }
     }

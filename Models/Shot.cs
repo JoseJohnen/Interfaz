@@ -108,7 +108,7 @@ namespace Interfaz.Models
                 };
 
                 Shot shot = new Shot();
-                strJson = strJson.Replace("\"", "").Replace(":<", ":\"<").Replace(">}", ">\"}");
+                strJson = strJson.Replace("\"", "").Replace(":<", ":\"<").Replace(">}", ">\"}").Replace(".�M�", ">");
                 string[] a = strJson.Replace("{","").Replace("}","").Split(",");//UtilityAssistant.CutJson(strJson);
 
                 if (a[0] != null)
