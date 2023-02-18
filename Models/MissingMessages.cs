@@ -1,5 +1,6 @@
 ﻿using Interfaz.Utilities;
 using System.Collections.Concurrent;
+using System.Text.Json.Serialization;
 
 namespace Interfaz.Models
 {
@@ -7,23 +8,50 @@ namespace Interfaz.Models
     {
         public List<string> l_missingMessages = new List<string>();
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public string extraValue = null;
+
         public static ConcurrentQueue<MissingMessages> q_MissingMessages = new ConcurrentQueue<MissingMessages>();
 
         public MissingMessages() { }
-        public MissingMessages(string[] message) { 
-            l_missingMessages.AddRange(message);
-        }
 
-        public MissingMessages(List<string> message)
+        public MissingMessages(string[] message, string extra = null)
         {
             l_missingMessages.AddRange(message);
+            if(!string.IsNullOrWhiteSpace(extra))
+            {
+                extraValue = extra;
+            }
+        }
+
+        public MissingMessages(List<string> message, string extra = null)
+        {
+            l_missingMessages.AddRange(message);
+            if (!string.IsNullOrWhiteSpace(extra))
+            {
+                extraValue = extra;
+            }
         }
 
         public string ToJson()
         {
             try
             {
-                string result = System.Text.Json.JsonSerializer.Serialize(this);
+                string result = "{ \"l_missingMessages\": [";
+
+                foreach (string item in l_missingMessages)
+                {
+                    result += item + ", ";
+                }
+                result += "]";
+                result = result.Replace(",]", "]").Replace(", ]", "]");
+
+                if (!string.IsNullOrWhiteSpace(extraValue))
+                {
+                    result += " \"extraValue\":" + this.extraValue;
+                }
+
+                result += "}";
                 return result;
             }
             catch (Exception ex)
@@ -39,7 +67,28 @@ namespace Interfaz.Models
             try
             {
                 txt = UtilityAssistant.CleanJSON(txt);
-                return System.Text.Json.JsonSerializer.Deserialize<MissingMessages>(txt);
+                string strProcess = txt.Substring(txt.IndexOf("[") + 1);
+                strProcess = strProcess.Substring(0, strProcess.IndexOf("]"));
+                string[] arrStrings = strProcess.Split(new char[] { ',' });
+
+                foreach (string item in arrStrings)
+                {
+                    this.l_missingMessages.Add(item);
+                }
+
+                string strProcess2 = txt.Substring(txt.IndexOf("]") + 1);
+                if (strProcess2.Contains("extraValue"))
+                {
+                    strProcess2 = strProcess2.Substring(strProcess2.IndexOf(":") + 1);
+                    strProcess2 = strProcess2.Replace("}", "");
+                    if (!string.IsNullOrWhiteSpace(strProcess2))
+                    {
+                        this.extraValue = strProcess2;
+                    }
+                }
+
+                MissingMessages msgMsg = new MissingMessages(arrStrings, strProcess2);
+                return msgMsg;
             }
             catch (Exception ex)
             {

@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
+using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
 namespace Interfaz.Utilities
@@ -722,6 +723,47 @@ namespace Interfaz.Utilities
                 if (strTemp.Contains("}\""))
                 {
                     strTemp = strTemp.Replace("}\"", "}");
+                }
+
+                Regex LRegex = new Regex(Regex.Escape("{"));
+                int intLRegex = new Regex(Regex.Escape("{")).Matches(strTemp).Count;
+                Regex RRegex = new Regex(Regex.Escape("}"));
+                int intRRegex = new Regex(Regex.Escape("}")).Matches(strTemp).Count;
+                int rslt = intRRegex + intLRegex;
+                while (LRegex.Matches(strTemp).Count != RRegex.Matches(strTemp).Count)
+                {
+                    if (LRegex.Matches(strTemp).Count > RRegex.Matches(strTemp).Count)
+                    {
+                        //El primero, elimina la primera instancia, el segundo, elimina todo hasta la segunda instancia
+                        if(strTemp.Contains("{"))
+                        {
+                            strTemp = strTemp.Substring(strTemp.IndexOf("{") + 1);
+                        }
+                        if (strTemp.Contains("{"))
+                        {
+                            strTemp = strTemp.Substring(strTemp.IndexOf("{"));
+                        }
+                    }
+
+                    if (LRegex.Matches(strTemp).Count < RRegex.Matches(strTemp).Count)
+                    {
+                        //El primero, elimina la última instancia, el segundo, elimina todo hasta la anterior
+                        //a la última instancia
+                        if (strTemp.Contains("}"))
+                        {
+                            strTemp = strTemp.Substring(0, strTemp.LastIndexOf("}") - 1);
+                        }
+                        if (strTemp.Contains("}"))
+                        {
+                            strTemp = strTemp.Substring(0, strTemp.IndexOf("}"));
+                        }
+                    }
+
+                    if (LRegex.Matches(strTemp).Count == 0 && RRegex.Matches(strTemp).Count == 0)
+                    {
+                        //Porque en este caso no es JSON en absoluto, pero debería serlo
+                        return string.Empty;
+                    }
                 }
 
                 return strTemp;
