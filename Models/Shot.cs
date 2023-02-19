@@ -53,11 +53,10 @@ namespace Interfaz.Models
                 {
                     Converters =
                     {
-                        new Vector3Converter()
-                        ,new ShotConverter()
+                        new ShotConverter()
                     },
-                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    WriteIndented = true
+                    //Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    //WriteIndented = true
                 };
 
                 string strJson = UtilityAssistant.CleanJSON(json);
@@ -102,13 +101,13 @@ namespace Interfaz.Models
                 strJson = jsonDoc.RootElement.GetRawText();
                 //strJson = reader.GetString();
 
-                JsonSerializerOptions serializeOptions = new JsonSerializerOptions
+                /*JsonSerializerOptions serializeOptions = new JsonSerializerOptions
                 {
                     Converters =
                     {
                         new Vector3Converter()
                     }
-                };
+                };*/
 
                 Shot shot = new Shot();
                 strJson = strJson.Replace("\"", "").Replace(":<", ":\"<").Replace(">}", ">\"}").Replace(".�M�", ">");
@@ -116,7 +115,7 @@ namespace Interfaz.Models
 
                 if (a[0] != null)
                 {
-                    shot.Id = a[0].Substring(a[0].IndexOf(":")+1);
+                    shot.Id = "\""+a[0].Substring(a[0].IndexOf(":")+1)+"\"";
                 }
                 else
                 {
@@ -219,7 +218,7 @@ namespace Interfaz.Models
                 //string wr =
 
 
-                string wr = @String.Concat("{ ", new string(a), "Id", new string(a), ":", Id, 
+                string wr = @String.Concat("{ ", new string(a), "Id", new string(a), ":", new string(a), Id, new string(a),
                     ", ",new string(a), "LN", new string(a), ":" , new string(a), LauncherName, new string(a),
                     ", " , new string(a), "Type", new string(a), ":", new string(a), Type, new string(a),
                     ", ", new string(a), "OrPos", new string(a), ":", LauncherPos,
