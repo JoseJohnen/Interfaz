@@ -9,7 +9,7 @@ namespace Interfaz.Models
 {
     public class ConsolidateMessage
     {
-        public static ConcurrentDictionary<string, ConsolidateMessage> dic_ActiveConsolidateMessages = new ConcurrentDictionary<string, ConsolidateMessage>();
+        private static ConcurrentDictionary<string, ConsolidateMessage> dic_ActiveConsolidateMessages = new ConcurrentDictionary<string, ConsolidateMessage>();
 
         private static ConcurrentDictionary<string, Pares<DateTime, List<Message>>> dic_WarehouseMessages = new ConcurrentDictionary<string, Pares<DateTime, List<Message>>>();
 
@@ -181,10 +181,10 @@ namespace Interfaz.Models
                                     {
                                         MissingMessages.q_MissingMessages.Enqueue(mmMsg);
                                     }
-                                    else
+                                    /*else
                                     {
                                         cnMsg.CleanCloseConsolidateMessage();
-                                    }
+                                    }*/
 
                                     //TODO: Check if this work AND update the data in the dic_Warehouse
                                     pares_datetime_l_messages.Item1 = DateTime.Now;
@@ -204,10 +204,10 @@ namespace Interfaz.Models
                                 {
                                     MissingMessages.q_MissingMessages.Enqueue(mmMsg);
                                 }
-                                else
+                                /*else
                                 {
                                     cnMsg.CleanCloseConsolidateMessage();
-                                }
+                                }*/
                                 continue;
                             }
                         }
@@ -327,9 +327,13 @@ namespace Interfaz.Models
                         messageConsolidate = messageResult;
 
                         //if consolidation was successfull, then, eliminate the consolidate object and the list from the warehouse
-                        Pares<DateTime, List<Message>> par = null;
-                        ConsolidateMessage.TryRemoveMessageFromWarehouse_ThroughKey(key, out par);
-                        UnRegister();
+                        string tstString = string.Empty;
+                        if(UtilityAssistant.TryBase64Decode(messageResult.text, out tstString))
+                        {
+                            Pares<DateTime, List<Message>> par = null;
+                            ConsolidateMessage.TryRemoveMessageFromWarehouse_ThroughKey(key, out par);
+                            UnRegister();
+                        }
                     }
                 }
 

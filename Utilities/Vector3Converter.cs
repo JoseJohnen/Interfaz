@@ -149,7 +149,7 @@ namespace Interfaz.Utilities
                 Shot shot = new Shot();
                 string[] a = UtilityAssistant.CutJson(strJson);
 
-                shot.Id = Convert.ToInt32(a[0]);
+                shot.Id = a[0];
                 shot.LN = a[1];
                 shot.Type = a[2];
 

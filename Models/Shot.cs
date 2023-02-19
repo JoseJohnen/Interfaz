@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Interfaz.Utilities;
 using Newtonsoft.Json;
@@ -9,7 +10,8 @@ namespace Interfaz.Models
 {
     public struct Shot
     {
-        public int Id { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+        public string Id { get; set; }
         public String LN { get; set; }
         public String Type { get; set; }
         public Vector3 OrPos { get; set; }
@@ -58,9 +60,10 @@ namespace Interfaz.Models
                     WriteIndented = true
                 };
 
+                string strJson = UtilityAssistant.CleanJSON(json);
                 //AllowTrailingCommas = true,
                 //ReadCommentHandling = JsonCommentHandling.Skip,
-                Shot shot = System.Text.Json.JsonSerializer.Deserialize<Shot>(json, serializeOptions);
+                Shot shot = System.Text.Json.JsonSerializer.Deserialize<Shot>(strJson, serializeOptions);
                 //this = shot;
 
                 return shot;
@@ -113,12 +116,12 @@ namespace Interfaz.Models
 
                 if (a[0] != null)
                 {
-                    shot.Id = Convert.ToInt32(a[0].Substring(a[0].IndexOf(":")+1));
+                    shot.Id = a[0].Substring(a[0].IndexOf(":")+1);
                 }
                 else
                 {
                     Console.WriteLine("a[0] es null, strJason es: " + strJson);
-                    shot.Id = 0;
+                    shot.Id = string.Empty;
                 }
 
                 if (a[1] != null)
@@ -189,7 +192,7 @@ namespace Interfaz.Models
             try
             {
                 //TODO: Corregir, testear y terminar
-                string Id = shot.Id+""; //"\"" + shot.Id + "\"";
+                string Id = string.IsNullOrWhiteSpace(shot.Id) ? "null" : shot.Id; //"\"" + shot.Id + "\"";
                 string LauncherName = string.IsNullOrWhiteSpace(shot.LN)? "null" : shot.LN ; //"\"" + shot.LN + "\"";
                 string Type = string.IsNullOrWhiteSpace(shot.Type) ? "null" : shot.Type ; //"\"" + shot.Type + "\"";
                 //string LauncherPos = new SerializedVector3(shot.OrPos).ToXML();
@@ -273,7 +276,7 @@ namespace Interfaz.Models
                 Shot shot = new Shot();
                 string[] a = UtilityAssistant.CutJson(strJson);
 
-                shot.Id = Convert.ToInt32(a[0]);
+                shot.Id = a[0];
                 shot.LN = a[1];
                 shot.Type = a[2];
 

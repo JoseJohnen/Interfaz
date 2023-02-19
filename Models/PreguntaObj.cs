@@ -4,7 +4,7 @@ namespace Interfaz.Models
 {
     public class PreguntaObj
     {
-        public List<int> l_id_bullets_preguntando = new List<int>();
+        public List<string> l_id_bullets_preguntando = new List<string>();
 
         public string ToJson()
         {
@@ -110,18 +110,10 @@ namespace Interfaz.Models
                 {
                     foreach (string it in tmpArrItm)
                     {
-                        preguntaObj.l_id_bullets_preguntando.Add(Convert.ToInt32(it));
+                        preguntaObj.l_id_bullets_preguntando.Add(it);
                     }
                 }
 
-
-                /*PreguntaObj shot = new PreguntaObj();
-                string[] a = UtilityAssistant.CutJson(strJson);
-
-                shot.Id = Convert.ToInt32(a[0]);
-                //shot.Pos = UtilityAssistant.XmlToClass<SerializedVector3>(a[1]).ConvertToVector3();
-                shot.Pos = System.Text.Json.JsonSerializer.Deserialize<ConversacionObj>(a[1]).ConvertToVector3();*/
-                //PreguntaObj preguntaObj = System.Text.Json.JsonSerializer.Deserialize<PreguntaObj>(tmpArrItm[0]);
                 return preguntaObj;
             }
             catch (Exception ex)
@@ -140,7 +132,7 @@ namespace Interfaz.Models
                 int last = 0;
                 strTemp += "\"l_id_bullets_preguntando\" : [";
                 last = conObj.l_id_bullets_preguntando.Count - 1;
-                foreach (int item in conObj.l_id_bullets_preguntando)
+                foreach (string item in conObj.l_id_bullets_preguntando)
                 {
                     strTemp += item;
                     if (i < last)

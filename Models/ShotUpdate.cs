@@ -7,10 +7,10 @@ namespace Interfaz.Models
 {
     public struct ShotPosUpdate
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
         public Vector3 Pos { get; set; }
 
-        public ShotPosUpdate(int id, Vector3 pos)
+        public ShotPosUpdate(string id, Vector3 pos)
         {
             this.Id = id;
             this.Pos = pos;
@@ -116,7 +116,7 @@ namespace Interfaz.Models
                 //string[] a = UtilityAssistant.CutJson(strJson);
                 a[0] = a[0].Substring(a[0].IndexOf(":") + 1).Replace("\"", "");
                 a[1] = "\""+(a[1].Substring(a[1].IndexOf(":") + 1).Replace("\"", "").Replace("}", "\"")); //it sets the " in the replacement to 
-                shot.Id = Convert.ToInt32(a[0]);
+                shot.Id = a[0];
                 //shot.Pos = UtilityAssistant.XmlToClass<SerializedVector3>(a[1]).ConvertToVector3();
                 string tmpString = "{ \"a\":"+a[1]+"}";
                 shot.Pos = System.Text.Json.JsonSerializer.Deserialize<Vector3>(tmpString, serializeOptions); // System.Text.Json.JsonSerializer.Deserialize<SerializedVector3>(a[1]).ConvertToVector3();
@@ -192,7 +192,7 @@ namespace Interfaz.Models
 
                 ShotPosUpdate shot = new ShotPosUpdate();
                 string[] a = UtilityAssistant.CutJson(strJson);
-                shot.Id = Convert.ToInt32(a[0]);
+                shot.Id = a[0];
                 //shot.Pos = UtilityAssistant.XmlToClass<SerializedVector3>(a[1]).ConvertToVector3();
                 shot.Pos = JsonConvert.DeserializeObject<SerializedVector3>(a[1]).ConvertToVector3();
 

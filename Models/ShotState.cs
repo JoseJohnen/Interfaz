@@ -3,13 +3,13 @@
     public enum StateOfTheShot { JustCreated = -1, None = 0, Destroyed = 1 }
     public class ShotState
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
         public StateOfTheShot State { get; set; }
 
-        public ShotState()
+        public ShotState(string id = "", StateOfTheShot state = StateOfTheShot.JustCreated)
         {
-            Id = 0;
-            State = StateOfTheShot.JustCreated;
+            Id = id;
+            State = state;
         }
 
         public string ToJson()

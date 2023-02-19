@@ -230,7 +230,7 @@ namespace Interfaz.Models
             string txt = Text;
             try
             {
-                txt = UtilityAssistant.CleanJSON(txt);
+                txt = UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
                 Message nwMsg = System.Text.Json.JsonSerializer.Deserialize<Message>(txt);
                 if(nwMsg != null)
                 {
