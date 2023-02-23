@@ -624,6 +624,7 @@ namespace Interfaz.Utilities
         {
             string strTemp = json;
             string strSecTemp = string.Empty;
+            string base64text = string.Empty;
             try
             {
                 //Verificar si es relevante siquiera correr la función
@@ -647,6 +648,15 @@ namespace Interfaz.Utilities
                         strTemp = strTemp.Replace(strTemp.Substring(strTemp.LastIndexOf("}") + 1), "");
                     }
                 }
+
+                if(strTemp.Contains("text"))
+                {
+                    base64text = strTemp.Substring(strTemp.IndexOf("text"));
+                    base64text = base64text.Substring(base64text.IndexOf(":") + 1);
+                    base64text = base64text.Substring(0, base64text.LastIndexOf("\"")).Replace("\"", "");
+                    strTemp = strTemp.Replace(base64text, "#$$#|°|#$$#");
+                }
+
 
                 /*if (strTemp.Contains("\\"))
                 {
@@ -765,6 +775,8 @@ namespace Interfaz.Utilities
                         return string.Empty;
                     }
                 }
+
+                strTemp = strTemp.Replace("#$$#|°|#$$#", base64text);
 
                 return strTemp;
             }

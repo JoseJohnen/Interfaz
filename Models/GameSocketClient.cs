@@ -19,7 +19,7 @@ namespace Interfaz.Models
         public ConcurrentQueue<string> l_SendQueueMessages { get; set; }
         public ConcurrentQueue<string> l_SendBigMessages { get; set; }
         public ConcurrentQueue<string> l_ReceiveQueueMessages { get; set; }
-        public ConcurrentQueue<string> l_ReceiveBigMessages { get; set; }
+        public BlockingCollection<string> l_ReceiveBigMessages { get; set; }
         public ConcurrentDictionary<uint, Message> dic_RegisterMessages { get; set; }
         public NetworkStream StreamNetwork { get; set; }
         public bool ClientConstructionReady { get => clientConstructionReady; set => clientConstructionReady = value; }
@@ -35,7 +35,7 @@ namespace Interfaz.Models
             this.l_SendQueueMessages = new ConcurrentQueue<string>();
             this.l_ReceiveQueueMessages = new ConcurrentQueue<string>();
             this.l_SendBigMessages = new ConcurrentQueue<string>();
-            this.l_ReceiveBigMessages = new ConcurrentQueue<string>();
+            this.l_ReceiveBigMessages = new BlockingCollection<string>();
             this.dic_RegisterMessages = new ConcurrentDictionary<uint, Message>();
             this.ClientConstructionReady = false;
             this.SendAsyncIsConnected = false;
@@ -50,7 +50,7 @@ namespace Interfaz.Models
             this.l_SendQueueMessages = new ConcurrentQueue<string>();
             this.l_ReceiveQueueMessages = new ConcurrentQueue<string>();
             this.l_SendBigMessages = new ConcurrentQueue<string>();
-            this.l_ReceiveBigMessages = new ConcurrentQueue<string>();
+            this.l_ReceiveBigMessages = new BlockingCollection<string>();
             this.dic_RegisterMessages = new ConcurrentDictionary<uint, Message>();
             this.ClientConstructionReady = false;
             this.SendAsyncIsConnected = false;
@@ -88,7 +88,7 @@ namespace Interfaz.Models
                 {
                     if (this.l_ReceiveBigMessages.Count > 0)
                     {
-                        this.l_ReceiveBigMessages.Clear();
+                        this.l_ReceiveBigMessages = null;
                     }
                 }
 

@@ -98,7 +98,7 @@ namespace Interfaz.Models
                 uint i = 1;
                 string tempText = text;
                 string firstMessageText = tempText.Substring(0, remanent);
-                tempText = tempText.Replace(firstMessageText,"");
+                tempText = tempText.Replace(firstMessageText, "");
                 Message frstmgs = Message.CreatePartMessage(firstMessageText, idRefMsg, i);
                 List<Message> l_messages = new List<Message>
                 {
@@ -125,9 +125,10 @@ namespace Interfaz.Models
                     ConsolidateMessage CnsMsg = new ConsolidateMessage(idRefMsg, (uint)l_messages.Count, text.Length);
                     CnsMsg.Text = text;
                     CnsMsg.GenerateKey();
+                    CnsMsg.SelfRegister();
                     foreach (Message mgs in l_messages)
                     {
-                        //ConsolidateMessage.dic_WarehouseMessages.TryAdd(CnsMsg.Key, new Pares<DateTime, Message>(DateTime.Now, mgs));
+                        //MakeMessageConsolidated.dic_WarehouseMessages.TryAdd(CnsMsg.Key, new Pares<DateTime, Message>(DateTime.Now, mgs));
                         CnsMsg.TryAddMessageToWarehouse(mgs);
                     }
 
@@ -137,15 +138,16 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error ConsolidateMessage CreateConsolidateMessage(string): " + ex.Message);
+                Console.WriteLine("Error MakeMessageConsolidated CreateConsolidateMessage(string): " + ex.Message);
                 return new ConsolidateMessage();
             }
         }
 
-        public static void CheckMissingMessages()
+        public static List<Message> CheckMissingMessages()
         {
             try
             {
+                List<Message> l_result_messages = new List<Message>();
                 if (DateTime.Now - LastIteration >= new TimeSpan(0, 0, 0, 0, 25))
                 {
                     if (dic_ActiveConsolidateMessages.Count > 0)
@@ -154,7 +156,7 @@ namespace Interfaz.Models
                         {
                             List<uint> l_uints = new List<uint>();
                             MissingMessages mmMsg = new MissingMessages();
-                            //List<Message> l_WarehouseMessage = ConsolidateMessage.dic_WarehouseMessages.Where(c => c.Key == cnMsg.key).Select(c => c.Value.Item2).FirstOrDefault();
+                            //List<Message> l_WarehouseMessage = MakeMessageConsolidated.dic_WarehouseMessages.Where(c => c.Key == cnMsg.key).Select(c => c.Value.Item2).FirstOrDefault();
                             Pares<DateTime, List<Message>> pares_datetime_l_messages = new(DateTime.Now, new List<Message>());
                             if (ConsolidateMessage.TryGetMessageFromWarehouse_ThroughKey(cnMsg.Key, out pares_datetime_l_messages))
                             {
@@ -181,10 +183,16 @@ namespace Interfaz.Models
                                     {
                                         MissingMessages.q_MissingMessages.Enqueue(mmMsg);
                                     }
-                                    /*else
+                                    else
                                     {
-                                        cnMsg.CleanCloseConsolidateMessage();
-                                    }*/
+                                        Message consolidatedMessage = cnMsg.MakeMessageConsolidated();
+                                        if (consolidatedMessage != null )
+                                        {
+                                            l_result_messages.Add(consolidatedMessage);
+                                            cnMsg.CleanCloseConsolidateMessage();
+                                        }
+
+                                    }
 
                                     //TODO: Check if this work AND update the data in the dic_Warehouse
                                     pares_datetime_l_messages.Item1 = DateTime.Now;
@@ -204,19 +212,56 @@ namespace Interfaz.Models
                                 {
                                     MissingMessages.q_MissingMessages.Enqueue(mmMsg);
                                 }
-                                /*else
+                                else
                                 {
-                                    cnMsg.CleanCloseConsolidateMessage();
-                                }*/
+                                    Message consolidatedMessage = cnMsg.MakeMessageConsolidated();
+                                    if (consolidatedMessage != null)
+                                    {
+                                        l_result_messages.Add(consolidatedMessage);
+                                        cnMsg.CleanCloseConsolidateMessage();
+                                    }
+                                }
                                 continue;
                             }
                         }
                     }
                 }
+                return l_result_messages;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error static CheckMissingMessages(): " + ex.Message);
+                Console.WriteLine("Error static List<Message> CheckMissingMessages(): " + ex.Message);
+                return new List<Message>();
+            }
+        }
+
+        private Message MakeMessageConsolidated()
+        {
+            try
+            {
+                Pares<DateTime, List<Message>> pares = null;
+                Message nwMsg = new Message();
+                if (ConsolidateMessage.TryGetMessageFromWarehouse_ThroughKey(this.Key, out pares))
+                {
+                    List<Message> l_collectedAlready = pares.Item2.Distinct(new DistinctMessageComparer()).ToList();
+                    int totalParts = l_collectedAlready.Count;
+                    if (this.parts == totalParts)
+                    {
+                        foreach (Message item in l_collectedAlready.OrderBy(c => c.IdMsg))
+                        {
+                            nwMsg.text += item.text;
+                        }
+                    }
+                }
+
+                nwMsg.text = nwMsg.text.Replace("\u002B", "+").Replace("u002B", "+");
+
+                return nwMsg;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Message MakeMessageConsolidated(): " + ex.Message);
+                return null;
             }
         }
 
@@ -321,14 +366,14 @@ namespace Interfaz.Models
                         Message messageResult = new Message();
                         foreach (Message item in Pair_Dt_LsMsg.Item2.OrderBy(c => c.IdMsg))
                         {
-                            messageResult.text += item.text.Replace("u002B","+");
+                            messageResult.text += item.text.Replace("u002B", "+");
                         }
                         //Here you return the consolidate, it will be null if it's not yet consolidated
                         messageConsolidate = messageResult;
 
                         //if consolidation was successfull, then, eliminate the consolidate object and the list from the warehouse
                         string tstString = string.Empty;
-                        if(UtilityAssistant.TryBase64Decode(messageResult.text, out tstString))
+                        if (UtilityAssistant.TryBase64Decode(messageResult.text, out tstString))
                         {
                             Pares<DateTime, List<Message>> par = null;
                             ConsolidateMessage.TryRemoveMessageFromWarehouse_ThroughKey(key, out par);
@@ -617,7 +662,8 @@ namespace Interfaz.Models
                             ConsolidateMessage cnMsg = new ConsolidateMessage();
                             if (ConsolidateMessage.TryCreateFromJson(tempString, out cnMsg))
                             {
-                                ConsolidateMessage.dic_ActiveConsolidateMessages.TryAdd(cnMsg.key, cnMsg);
+                                cnMsg.SelfRegister();
+                                //ConsolidateMessage.dic_ActiveConsolidateMessages.TryAdd(cnMsg.key, cnMsg);
                                 return true; //Porque es un mensaje de consolidación, no un mensaje que pudiera ser colocado
                                              //junto a otros para armar un mensaje masivo, por tanto, al resolver el tema de agregarlo a la 
                                              //lista para poder tenerlo vigilado y que empieze la espera por los mensaje que componen el mensaje
@@ -665,7 +711,8 @@ namespace Interfaz.Models
                     ConsolidateMessage cnMsg = new ConsolidateMessage();
                     if (ConsolidateMessage.TryCreateFromJson(nwMsg.TextOriginal, out cnMsg))
                     {
-                        ConsolidateMessage.dic_ActiveConsolidateMessages.TryAdd(cnMsg.key, cnMsg);
+                        cnMsg.SelfRegister();
+                        //ConsolidateMessage.dic_ActiveConsolidateMessages.TryAdd(cnMsg.key, cnMsg);
                         return true; //Porque es un mensaje de consolidación, no un mensaje que pudiera ser colocado
                                      //junto a otros para armar un mensaje masivo, por tanto, al resolver el tema de agregarlo a la 
                                      //lista para poder tenerlo vigilado y que empieze la espera por los mensaje que componen el mensaje
@@ -695,7 +742,7 @@ namespace Interfaz.Models
 
                 if (ConsolidateMessage.dic_ActiveConsolidateMessages.Count > 0)
                 {
-                    foreach (ConsolidateMessage item in ConsolidateMessage.dic_ActiveConsolidateMessages.Values)
+                    foreach (ConsolidateMessage item in ConsolidateMessage.dic_ActiveConsolidateMessages.Values.ToList())
                     {
                         if (item.IdRef == message.IdRef)
                         {
@@ -713,10 +760,11 @@ namespace Interfaz.Models
                         ConsolidateMessage cnMsg = new ConsolidateMessage();
                         if (ConsolidateMessage.TryCreateFromJson(message.TextOriginal, out cnMsg))
                         {
-                            ConsolidateMessage.dic_ActiveConsolidateMessages.TryAdd(cnMsg.key, cnMsg);
+                            cnMsg.SelfRegister();
+                            //ConsolidateMessage.dic_ActiveConsolidateMessages.TryAdd(cnMsg.key, cnMsg);
                         }
 
-                        foreach (ConsolidateMessage item in ConsolidateMessage.dic_ActiveConsolidateMessages.Values)
+                        foreach (ConsolidateMessage item in ConsolidateMessage.dic_ActiveConsolidateMessages.Values.ToList())
                         {
                             if (item.IdRef == message.IdRef)
                             {
@@ -750,7 +798,7 @@ namespace Interfaz.Models
 
                 if (ConsolidateMessage.dic_ActiveConsolidateMessages.Count > 0)
                 {
-                    foreach (ConsolidateMessage item in ConsolidateMessage.dic_ActiveConsolidateMessages.Values)
+                    foreach (ConsolidateMessage item in ConsolidateMessage.dic_ActiveConsolidateMessages.Values.ToList())
                     {
                         if (item.IdRef == message.IdRef)
                         {
@@ -768,10 +816,11 @@ namespace Interfaz.Models
                         ConsolidateMessage cnMsg = new ConsolidateMessage();
                         if (ConsolidateMessage.TryCreateFromJson(message.TextOriginal, out cnMsg))
                         {
-                            ConsolidateMessage.dic_ActiveConsolidateMessages.TryAdd(cnMsg.key, cnMsg);
+                            cnMsg.SelfRegister();
+                            //ConsolidateMessage.dic_ActiveConsolidateMessages.TryAdd(cnMsg.key, cnMsg);
                         }
 
-                        foreach (ConsolidateMessage item in ConsolidateMessage.dic_ActiveConsolidateMessages.Values)
+                        foreach (ConsolidateMessage item in ConsolidateMessage.dic_ActiveConsolidateMessages.Values.ToList())
                         {
                             if (item.IdRef == message.IdRef)
                             {
@@ -802,7 +851,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ConsolidateMessage) ToJson: " + ex.Message);
+                Console.WriteLine("Error (MakeMessageConsolidated) ToJson: " + ex.Message);
                 return string.Empty;
             }
         }
@@ -825,7 +874,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ConsolidateMessage) FromJson: " + ex.Message + " Text: " + txt);
+                Console.WriteLine("Error (MakeMessageConsolidated) FromJson: " + ex.Message + " Text: " + txt);
                 return new ConsolidateMessage();
             }
         }
@@ -848,7 +897,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ConsolidateMessage) TryFromJson: " + ex.Message + " Text: " + txt);
+                Console.WriteLine("Error (MakeMessageConsolidated) TryFromJson: " + ex.Message + " Text: " + txt);
                 return false;
             }
         }
@@ -862,7 +911,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ConsolidateMessage) CreateFromJson: " + ex.Message);
+                Console.WriteLine("Error (MakeMessageConsolidated) CreateFromJson: " + ex.Message);
                 return new ConsolidateMessage();
             }
         }
@@ -882,7 +931,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ConsolidateMessage) TryCreateFromJson: " + ex.Message);
+                Console.WriteLine("Error (MakeMessageConsolidated) TryCreateFromJson: " + ex.Message);
                 consolidateMessage = null;
                 return false;
             }
