@@ -44,7 +44,7 @@ namespace Interfaz.Models
                 if (tempText.Length > remanent && !this.IsBlockMultiMessage)
                 {
                     ConsolidateMessage csMsg = ConsolidateMessage.CreateConsolidateMessage(tempText);
-                    if(csMsg != null)
+                    if (csMsg != null)
                     {
                         text = Utilities.UtilityAssistant.Base64Encode("CM:" + csMsg.ToJson()); //No se pone TAG porque funciona antes del sistema de TAG
                     }
@@ -232,12 +232,12 @@ namespace Interfaz.Models
             {
                 txt = UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
                 Message nwMsg = System.Text.Json.JsonSerializer.Deserialize<Message>(txt);
-                if(nwMsg != null)
+                if (nwMsg != null)
                 {
                     this.text = nwMsg.text;
                     this.length = nwMsg.length;
-                    this.IdRef= nwMsg.IdRef;
-                    this.IdMsg= nwMsg.IdMsg;
+                    this.IdRef = nwMsg.IdRef;
+                    this.IdMsg = nwMsg.IdMsg;
                 }
                 return nwMsg;
             }
@@ -259,6 +259,27 @@ namespace Interfaz.Models
             {
                 Console.WriteLine("Error (Message) CreateFromJson: " + ex.Message);
                 return new Message();
+            }
+        }
+
+        public static bool ValidTextFromJsonMsg(string jsonText)
+        {
+            try
+            {
+                if (jsonText.Contains("text"))
+                {
+                    string base64text = jsonText.Substring(jsonText.IndexOf("text"));
+                    base64text = base64text.Substring(base64text.IndexOf(":") + 1);
+                    base64text = base64text.Substring(0, base64text.LastIndexOf("\"")).Replace("\"", "");
+                    string result = string.Empty;
+                    return UtilityAssistant.TryBase64Decode(base64text, out result);
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error static bool ValidTextFromJsonMsg: " + ex.Message);
+                return false;
             }
         }
     }

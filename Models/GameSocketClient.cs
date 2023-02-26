@@ -16,9 +16,9 @@ namespace Interfaz.Models
         public Socket ListenerSocket { get; set; }
         public Socket SenderSocket { get; set; }
         public Socket StreamSocket { get; set; }
-        public ConcurrentQueue<string> l_SendQueueMessages { get; set; }
-        public ConcurrentQueue<string> l_SendBigMessages { get; set; }
-        public ConcurrentQueue<string> l_ReceiveQueueMessages { get; set; }
+        public BlockingCollection<string> l_SendQueueMessages { get; set; }
+        public BlockingCollection<string> l_SendBigMessages { get; set; }
+        public BlockingCollection<string> l_ReceiveQueueMessages { get; set; }
         public BlockingCollection<string> l_ReceiveBigMessages { get; set; }
         public ConcurrentDictionary<uint, Message> dic_RegisterMessages { get; set; }
         public NetworkStream StreamNetwork { get; set; }
@@ -32,9 +32,9 @@ namespace Interfaz.Models
             this.ListenerSocket = ListenerSocket;
             this.SenderSocket = null;
             this.StreamSocket = null;
-            this.l_SendQueueMessages = new ConcurrentQueue<string>();
-            this.l_ReceiveQueueMessages = new ConcurrentQueue<string>();
-            this.l_SendBigMessages = new ConcurrentQueue<string>();
+            this.l_SendQueueMessages = new BlockingCollection<string>();
+            this.l_ReceiveQueueMessages = new BlockingCollection<string>();
+            this.l_SendBigMessages = new BlockingCollection<string>();
             this.l_ReceiveBigMessages = new BlockingCollection<string>();
             this.dic_RegisterMessages = new ConcurrentDictionary<uint, Message>();
             this.ClientConstructionReady = false;
@@ -47,9 +47,9 @@ namespace Interfaz.Models
             this.ListenerSocket = null;
             this.SenderSocket = null;
             this.StreamSocket = null;
-            this.l_SendQueueMessages = new ConcurrentQueue<string>();
-            this.l_ReceiveQueueMessages = new ConcurrentQueue<string>();
-            this.l_SendBigMessages = new ConcurrentQueue<string>();
+            this.l_SendQueueMessages = new BlockingCollection<string>();
+            this.l_ReceiveQueueMessages = new BlockingCollection<string>();
+            this.l_SendBigMessages = new BlockingCollection<string>();
             this.l_ReceiveBigMessages = new BlockingCollection<string>();
             this.dic_RegisterMessages = new ConcurrentDictionary<uint, Message>();
             this.ClientConstructionReady = false;
@@ -64,7 +64,7 @@ namespace Interfaz.Models
                 {
                     if(this.l_SendQueueMessages.Count > 0)
                     {
-                        this.l_SendQueueMessages.Clear();
+                        this.l_SendQueueMessages = null;
                     }
                 }
 
@@ -72,7 +72,7 @@ namespace Interfaz.Models
                 {
                     if (this.l_ReceiveQueueMessages.Count > 0)
                     {
-                        this.l_ReceiveQueueMessages.Clear();
+                        this.l_ReceiveQueueMessages = null;
                     }
                 }
 
@@ -80,7 +80,7 @@ namespace Interfaz.Models
                 {
                     if (this.l_SendBigMessages.Count > 0)
                     {
-                        this.l_SendBigMessages.Clear();
+                        this.l_SendBigMessages = null;
                     }
                 }
 
