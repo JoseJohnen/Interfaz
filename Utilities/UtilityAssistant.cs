@@ -649,14 +649,22 @@ namespace Interfaz.Utilities
                     }
                 }
 
-                if(strTemp.Contains("text"))
+                if (strTemp.Contains("text"))
                 {
                     base64text = strTemp.Substring(strTemp.IndexOf("text"));
                     base64text = base64text.Substring(base64text.IndexOf(":") + 1);
-                    base64text = base64text.Substring(0, base64text.LastIndexOf("\"")).Replace("\"", "");
-                    strTemp = strTemp.Replace(base64text, "#$$#|°|#$$#");
+                    if (base64text.Contains("\""))
+                    {
+                        base64text = base64text.Substring(0, base64text.LastIndexOf("\"")).Replace("\"", "");
+                    }
+                    if (!string.IsNullOrWhiteSpace(base64text))
+                    {
+                        if (strTemp.Contains(base64text))
+                        {
+                            strTemp = strTemp.Replace(base64text, "#$$#|°|#$$#");
+                        }
+                    }
                 }
-
 
                 /*if (strTemp.Contains("\\"))
                 {
@@ -745,7 +753,7 @@ namespace Interfaz.Utilities
                     if (LRegex.Matches(strTemp).Count > RRegex.Matches(strTemp).Count)
                     {
                         //El primero, elimina la primera instancia, el segundo, elimina todo hasta la segunda instancia
-                        if(strTemp.Contains("{"))
+                        if (strTemp.Contains("{"))
                         {
                             strTemp = strTemp.Substring(strTemp.IndexOf("{") + 1);
                         }
@@ -761,7 +769,16 @@ namespace Interfaz.Utilities
                         //a la última instancia
                         if (strTemp.Contains("}"))
                         {
-                            strTemp = strTemp.Substring(0, strTemp.LastIndexOf("}") - 1);
+                            int location = 0;
+                            if ((strTemp.LastIndexOf("}") - 1) < 2)
+                            {
+                                location = 1;
+                            }
+                            else
+                            {
+                                location = (strTemp.LastIndexOf("}") - 1);
+                            }
+                            strTemp = strTemp.Substring(0, location);
                         }
                         if (strTemp.Contains("}"))
                         {
@@ -776,7 +793,10 @@ namespace Interfaz.Utilities
                     }
                 }
 
-                strTemp = strTemp.Replace("#$$#|°|#$$#", base64text);
+                if (!string.IsNullOrWhiteSpace(base64text))
+                {
+                    strTemp = strTemp.Replace("#$$#|°|#$$#", base64text);
+                }
 
                 return strTemp;
             }
