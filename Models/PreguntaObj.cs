@@ -61,7 +61,7 @@ namespace Interfaz.Models
             catch (Exception ex)
             {
                 Console.WriteLine("Error (PreguntaObj) FromJson(): " + ex.Message);
-                return default(PreguntaObj);
+                return null;
             }
         }
 
@@ -75,7 +75,7 @@ namespace Interfaz.Models
             catch (Exception ex)
             {
                 Console.WriteLine("Error (PreguntaObj) CreateFromJson(): " + ex.Message);
-                return default(PreguntaObj);
+                return null;
             }
         }
     }
