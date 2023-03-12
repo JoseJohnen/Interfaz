@@ -1,4 +1,6 @@
-﻿namespace Interfaz.Models
+﻿using Interfaz.Utilities;
+
+namespace Interfaz.Models
 {
     public enum StateOfTheShot { JustCreated = -1, None = 0, Destroyed = 1 }
     public class ShotState
@@ -29,7 +31,8 @@
         {
             try
             {
-                ShotState shot = System.Text.Json.JsonSerializer.Deserialize<ShotState>(json);
+                string strJson = UtilityAssistant.CleanJSON(json);
+                ShotState shot = System.Text.Json.JsonSerializer.Deserialize<ShotState>(strJson);
                 return shot;
             }
             catch (Exception ex)
