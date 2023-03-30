@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System.Numerics;
 using System.Text.Json;
 
-namespace Interfaz.Models
+namespace Interfaz.Models.Shots
 {
     public struct ShotPosUpdate
     {
@@ -12,8 +12,8 @@ namespace Interfaz.Models
 
         public ShotPosUpdate(string id, Vector3 pos)
         {
-            this.Id = id;
-            this.Pos = pos;
+            Id = id;
+            Pos = pos;
         }
 
         public string ToJson()
@@ -62,7 +62,7 @@ namespace Interfaz.Models
             catch (Exception ex)
             {
                 Console.WriteLine("Error (ShotPosUpdate) FromJson(): " + ex.Message);
-                return default(ShotPosUpdate);
+                return default;
             }
         }
 
@@ -70,7 +70,7 @@ namespace Interfaz.Models
         {
             try
             {
-                if(string.IsNullOrWhiteSpace(json))
+                if (string.IsNullOrWhiteSpace(json))
                 {
                     new ShotPosUpdate();
                 }
@@ -81,7 +81,7 @@ namespace Interfaz.Models
             catch (Exception ex)
             {
                 Console.WriteLine("Error (ShotPosUpdate) CreateFromJson(): " + ex.Message);
-                return default(ShotPosUpdate);
+                return default;
             }
         }
     }
@@ -96,8 +96,8 @@ namespace Interfaz.Models
                 //TODO: Corregir, testear y terminar
                 JsonDocument jsonDoc = JsonDocument.ParseValue(ref reader);
                 strJson = jsonDoc.RootElement.GetRawText();
-               
-                if(reader.Read())
+
+                if (reader.Read())
                 {
                     strJson = reader.GetString();
                 }
@@ -115,18 +115,18 @@ namespace Interfaz.Models
                 string[] a = strJson.Split(",", StringSplitOptions.RemoveEmptyEntries);
                 //string[] a = UtilityAssistant.CutJson(strJson);
                 a[0] = a[0].Substring(a[0].IndexOf(":") + 1).Replace("\"", "");
-                a[1] = "\""+(a[1].Substring(a[1].IndexOf(":") + 1).Replace("\"", "").Replace("}", "\"")); //it sets the " in the replacement to 
+                a[1] = "\"" + a[1].Substring(a[1].IndexOf(":") + 1).Replace("\"", "").Replace("}", "\""); //it sets the " in the replacement to 
                 shot.Id = a[0];
                 //shot.Pos = UtilityAssistant.XmlToClass<SerializedVector3>(a[1]).ConvertToVector3();
-                string tmpString = "{ \"a\":"+a[1]+"}";
+                string tmpString = "{ \"a\":" + a[1] + "}";
                 shot.Pos = System.Text.Json.JsonSerializer.Deserialize<Vector3>(tmpString, serializeOptions); // System.Text.Json.JsonSerializer.Deserialize<SerializedVector3>(a[1]).ConvertToVector3();
 
                 return shot;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("\n\nError: (ShotUpdateConverter) Read(): {0} Message: {1}", strJson, ex.Message);
-                return default(ShotPosUpdate);
+                Console.WriteLine("\n\nError: (MonsterPosUpodateConverter) Read(): {0} Message: {1}", strJson, ex.Message);
+                return default;
             }
         }
 
@@ -146,7 +146,7 @@ namespace Interfaz.Models
                 //TODO: Corregir, testear y terminar
                 string Id = "\"" + shot.Id + "\"";
                 //string Pos = new SerializedVector3(shot.Pos).ToXML();
-                string Pos = System.Text.Json.JsonSerializer.Serialize<Vector3>(shot.Pos,serializeOptions); //new SerializedVector3(shot.Pos).ToJson();
+                string Pos = System.Text.Json.JsonSerializer.Serialize(shot.Pos, serializeOptions); //new SerializedVector3(shot.Pos).ToJson();
 
                 string resultJson = "{\"Id\":" + Id + ", \"Pos\":" + Pos + "}";
                 writer.WriteStringValue(resultJson);
@@ -158,7 +158,7 @@ namespace Interfaz.Models
         }
     }
 
-    public class ShotUpdateConverterJSON : Newtonsoft.Json.JsonConverter<ShotPosUpdate>
+    public class ShotUpdateConverterJSON : JsonConverter<ShotPosUpdate>
     {
         public override void WriteJson(JsonWriter writer, ShotPosUpdate shot, Newtonsoft.Json.JsonSerializer serializer)
         {
@@ -174,7 +174,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: (ShotUpdateConverterJSON) Write(): " + ex.Message);
+                Console.WriteLine("Error: (MonsterPosUpdateConverterJSON) Write(): " + ex.Message);
             }
         }
 
@@ -200,8 +200,8 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: (ShotUpdateConverterJSON) ReadJson(): {0} Message: {1}", strJson, ex.Message);
-                return default(ShotPosUpdate);
+                Console.WriteLine("Error: (MonsterPosUpdateConverterJSON) ReadJson(): {0} Message: {1}", strJson, ex.Message);
+                return default;
             }
         }
     }

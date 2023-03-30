@@ -1,4 +1,4 @@
-﻿using Interfaz.Models;
+﻿using Interfaz.Models.Shots;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

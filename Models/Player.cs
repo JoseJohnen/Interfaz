@@ -1,4 +1,6 @@
-﻿using Interfaz.Utilities;
+﻿using Interfaz.Models.Auxiliary;
+using Interfaz.Models.Puppets;
+using Interfaz.Utilities;
 using System.Net.Sockets;
 using System.Numerics;
 using System.Text.Encodings.Web;
@@ -64,6 +66,7 @@ namespace Interfaz.Models
         public Vector3 LstRightarm { get => lstRightarm; }
         public Quaternion LstRotation { get => lstRotation; }
         public override string Name { get; set; } = "TODO: PlayerNameExtractedFromDBWhenLogin";
+        public override IA_Instructions IA_Instructions { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
         public static string SetLoad(TcpClient tcpClient, string receivedRelevantInformation)
         {
@@ -304,10 +307,9 @@ namespace Interfaz.Models
             }
         }
 
-        public override void RunIA()
+        public override void RunIAServer(string instruciones, Vector3 target)
         {
-            //No aplica
-            return;
+            throw new NotImplementedException();
         }
     }
 

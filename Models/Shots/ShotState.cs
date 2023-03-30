@@ -1,6 +1,6 @@
 ﻿using Interfaz.Utilities;
 
-namespace Interfaz.Models
+namespace Interfaz.Models.Shots
 {
     public enum StateOfTheShot { JustCreated = -1, None = 0, Destroyed = 1 }
     public class ShotState
@@ -22,7 +22,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ShotState) ToJson(): " + ex.Message);
+                Console.WriteLine("Error (MonsterState) ToJson(): " + ex.Message);
                 return string.Empty;
             }
         }
@@ -37,7 +37,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ShotState) FromJson(): " + ex.Message);
+                Console.WriteLine("Error (MonsterState) FromJson(): " + ex.Message);
                 return new ShotState();
             }
         }
@@ -51,7 +51,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ShotState) CreateFromJson(): " + ex.Message);
+                Console.WriteLine("Error (MonsterState) CreateFromJson(): " + ex.Message);
                 return new ShotState();
             }
         }

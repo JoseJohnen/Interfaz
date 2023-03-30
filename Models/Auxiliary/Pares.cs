@@ -1,4 +1,4 @@
-﻿namespace Interfaz.Code.Models
+﻿namespace Interfaz.Models.Auxiliary
 {
     [Serializable]
     public class Pares<T1, T2>
@@ -8,17 +8,17 @@
 
         public Pares(T1 item1, T2 item2)
         {
-            this.Item1 = item1;
-            this.Item2 = item2;
+            Item1 = item1;
+            Item2 = item2;
         }
-       
-       #region ForEach Compatibility
+
+        #region ForEach Compatibility
         /*public IEnumerator GetEnumerator()
         {
             return (IEnumerator)this;
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();*/
-        #endregion     
-	}
+        #endregion
+    }
 }

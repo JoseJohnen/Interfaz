@@ -222,6 +222,30 @@ namespace Interfaz.Utilities
             }
         }
 
+        public static string ExtractAIInstructionData(string instruction, string valueName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(instruction))
+                {
+                    return string.Empty;
+                }
+
+                string result = instruction;
+                result = result.Substring(result.IndexOf("\"" + valueName + "\":"));
+                result = result.Replace(result.Substring(result.IndexOf(",")), "");
+                string aarg = "\"" + valueName + "\":";
+                result = result.Replace(aarg, "");
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string ExtractValues(string, string): " + ex.Message);
+                return String.Empty;
+            }
+        }
+
         /// <summary>
         /// Compare floats, usually used in floats of position, to determine what is the directional difference between them, it will return a -1, 0 or 1 depending of the imaginary nature of the answer 
         /// </summary>

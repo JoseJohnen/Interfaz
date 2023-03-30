@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Interfaz.Models
+namespace Interfaz.Models.Comms
 {
     public class StateMessage
     {
@@ -24,7 +24,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ShotState) ToJson(): " + ex.Message);
+                Console.WriteLine("Error (MonsterState) ToJson(): " + ex.Message);
                 return string.Empty;
             }
         }
@@ -37,7 +37,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ShotState) ToJson(): " + ex.Message);
+                Console.WriteLine("Error (MonsterState) ToJson(): " + ex.Message);
                 return new StateMessage();
             }
         }
@@ -51,7 +51,7 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ShotState) ToJson(): " + ex.Message);
+                Console.WriteLine("Error (MonsterState) ToJson(): " + ex.Message);
                 return new StateMessage();
             }
         }

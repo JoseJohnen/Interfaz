@@ -1,9 +1,9 @@
-﻿using Interfaz.Code.Models;
+﻿using Interfaz.Models.Auxiliary;
 using Interfaz.Utilities;
 using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
 
-namespace Interfaz.Models
+namespace Interfaz.Models.Comms
 {
     public class ConsolidateMessage
     {
@@ -156,7 +156,7 @@ namespace Interfaz.Models
                             MissingMessages mmMsg = new MissingMessages();
                             //List<Message> l_WarehouseMessage = MakeMessageConsolidated.dic_WarehouseMessages.Where(c => c.Key == cnMsg.key).Select(c => c.Value.Item2).FirstOrDefault();
                             Pares<DateTime, List<Message>> pares_datetime_l_messages = new(DateTime.Now, new List<Message>());
-                            if (ConsolidateMessage.TryGetMessageFromWarehouse_ThroughKey(cnMsg.Key, out pares_datetime_l_messages))
+                            if (TryGetMessageFromWarehouse_ThroughKey(cnMsg.Key, out pares_datetime_l_messages))
                             {
                                 if (DateTime.Now - pares_datetime_l_messages.Item1 >= new TimeSpan(0, 0, 0, 0, 50))
                                 {
@@ -184,7 +184,7 @@ namespace Interfaz.Models
                                     else
                                     {
                                         Message consolidatedMessage = cnMsg.MakeMessageConsolidated();
-                                        if (consolidatedMessage != null )
+                                        if (consolidatedMessage != null)
                                         {
                                             l_result_messages.Add(consolidatedMessage);
                                             cnMsg.CleanCloseConsolidateMessage();
@@ -239,11 +239,11 @@ namespace Interfaz.Models
             {
                 Pares<DateTime, List<Message>> pares = null;
                 Message nwMsg = new Message();
-                if (ConsolidateMessage.TryGetMessageFromWarehouse_ThroughKey(this.Key, out pares))
+                if (TryGetMessageFromWarehouse_ThroughKey(Key, out pares))
                 {
                     List<Message> l_collectedAlready = pares.Item2.Distinct(new DistinctMessageComparer()).ToList();
                     int totalParts = l_collectedAlready.Count;
-                    if (this.parts == totalParts)
+                    if (parts == totalParts)
                     {
                         foreach (Message item in l_collectedAlready.OrderBy(c => c.IdMsg))
                         {
@@ -290,7 +290,7 @@ namespace Interfaz.Models
             try
             {
                 Pares<DateTime, List<Message>> par = null;
-                ConsolidateMessage.TryRemoveMessageFromWarehouse_ThroughKey(Key, out par);
+                TryRemoveMessageFromWarehouse_ThroughKey(Key, out par);
                 UnRegister();
                 return true;
             }
@@ -306,7 +306,7 @@ namespace Interfaz.Models
             try
             {
                 Pares<DateTime, List<Message>> par = null;
-                ConsolidateMessage.TryRemoveMessageFromWarehouse_ThroughKey(consolidateMessage.Key, out par);
+                TryRemoveMessageFromWarehouse_ThroughKey(consolidateMessage.Key, out par);
                 consolidateMessage.UnRegister();
                 return true;
             }
@@ -328,7 +328,7 @@ namespace Interfaz.Models
                 messageConsolidate = null;
                 Pares<DateTime, List<Message>> Pair_Dt_LsMsg = null;
                 Pares<DateTime, List<Message>> Old_Pair_Dt_LsMsg = null;
-                if (ConsolidateMessage.dic_WarehouseMessages.TryGetValue(key, out Pair_Dt_LsMsg))
+                if (dic_WarehouseMessages.TryGetValue(key, out Pair_Dt_LsMsg))
                 {
                     Old_Pair_Dt_LsMsg = Pair_Dt_LsMsg;
                     if (Pair_Dt_LsMsg != null)
@@ -338,7 +338,7 @@ namespace Interfaz.Models
                             if (Pair_Dt_LsMsg.Item2.Contains(message) == false)
                             {
                                 Pair_Dt_LsMsg.Item2.Add(message);
-                                if (ConsolidateMessage.dic_WarehouseMessages.TryUpdate(key, Pair_Dt_LsMsg, Old_Pair_Dt_LsMsg))
+                                if (dic_WarehouseMessages.TryUpdate(key, Pair_Dt_LsMsg, Old_Pair_Dt_LsMsg))
                                 {
                                     result = true;
                                 }
@@ -350,13 +350,13 @@ namespace Interfaz.Models
                 {
                     List<Message> l_msg = new List<Message>() { message };
                     Pares<DateTime, List<Message>> pair_dt_l_msg = new Pares<DateTime, List<Message>>(DateTime.Now, l_msg);
-                    if (ConsolidateMessage.dic_WarehouseMessages.TryAdd(key, pair_dt_l_msg))
+                    if (dic_WarehouseMessages.TryAdd(key, pair_dt_l_msg))
                     {
                         result = true;
                     }
                 }
 
-                if (ConsolidateMessage.dic_WarehouseMessages.TryGetValue(key, out Pair_Dt_LsMsg))
+                if (dic_WarehouseMessages.TryGetValue(key, out Pair_Dt_LsMsg))
                 {
                     if (parts == Pair_Dt_LsMsg.Item2.Count)
                     {
@@ -374,7 +374,7 @@ namespace Interfaz.Models
                         if (UtilityAssistant.TryBase64Decode(messageResult.text, out tstString))
                         {
                             Pares<DateTime, List<Message>> par = null;
-                            ConsolidateMessage.TryRemoveMessageFromWarehouse_ThroughKey(key, out par);
+                            TryRemoveMessageFromWarehouse_ThroughKey(key, out par);
                             UnRegister();
                         }
                     }
@@ -396,7 +396,7 @@ namespace Interfaz.Models
             {
                 Pares<DateTime, List<Message>> Pair_Dt_LsMsg = null;
                 Pares<DateTime, List<Message>> Old_Pair_Dt_LsMsg = null;
-                if (ConsolidateMessage.dic_WarehouseMessages.TryGetValue(key, out Pair_Dt_LsMsg))
+                if (dic_WarehouseMessages.TryGetValue(key, out Pair_Dt_LsMsg))
                 {
                     Old_Pair_Dt_LsMsg = Pair_Dt_LsMsg;
                     if (Pair_Dt_LsMsg != null)
@@ -406,7 +406,7 @@ namespace Interfaz.Models
                             if (Pair_Dt_LsMsg.Item2.Contains(message) == false)
                             {
                                 Pair_Dt_LsMsg.Item2.Add(message);
-                                if (ConsolidateMessage.dic_WarehouseMessages.TryUpdate(key, Pair_Dt_LsMsg, Old_Pair_Dt_LsMsg))
+                                if (dic_WarehouseMessages.TryUpdate(key, Pair_Dt_LsMsg, Old_Pair_Dt_LsMsg))
                                 {
                                     return true;
                                 }
@@ -418,7 +418,7 @@ namespace Interfaz.Models
                 {
                     List<Message> l_msg = new List<Message>() { message };
                     Pares<DateTime, List<Message>> pair_dt_l_msg = new Pares<DateTime, List<Message>>(DateTime.Now, l_msg);
-                    if (ConsolidateMessage.dic_WarehouseMessages.TryAdd(key, pair_dt_l_msg))
+                    if (dic_WarehouseMessages.TryAdd(key, pair_dt_l_msg))
                     {
                         return true;
                     }
@@ -444,7 +444,7 @@ namespace Interfaz.Models
                     return false;
                 }
 
-                if (ConsolidateMessage.dic_WarehouseMessages.TryGetValue(key, out par))
+                if (dic_WarehouseMessages.TryGetValue(key, out par))
                 {
                     return true;
                 }
@@ -470,7 +470,7 @@ namespace Interfaz.Models
                     return false;
                 }
 
-                foreach (KeyValuePair<string, Pares<DateTime, List<Message>>> item in ConsolidateMessage.dic_WarehouseMessages)
+                foreach (KeyValuePair<string, Pares<DateTime, List<Message>>> item in dic_WarehouseMessages)
                 {
                     if (item.Key == key)
                     {
@@ -505,7 +505,7 @@ namespace Interfaz.Models
                     return false;
                 }
 
-                if (ConsolidateMessage.dic_WarehouseMessages.TryRemove(key, out par))
+                if (dic_WarehouseMessages.TryRemove(key, out par))
                 {
                     return true;
                 }
@@ -523,7 +523,7 @@ namespace Interfaz.Models
         {
             try
             {
-                foreach (Pares<DateTime, List<Message>> item in ConsolidateMessage.dic_WarehouseMessages.Values)
+                foreach (Pares<DateTime, List<Message>> item in dic_WarehouseMessages.Values)
                 {
                     if (item.Item2.Contains(msg))
                     {
@@ -550,7 +550,7 @@ namespace Interfaz.Models
                     return false;
                 }
 
-                if (ConsolidateMessage.dic_WarehouseMessages.TryRemove(Key, out par))
+                if (dic_WarehouseMessages.TryRemove(Key, out par))
                 {
                     return true;
                 }
@@ -571,11 +571,11 @@ namespace Interfaz.Models
             try
             {
                 ConsolidateMessage cnMsg = new ConsolidateMessage();
-                if (!ConsolidateMessage.dic_ActiveConsolidateMessages.TryGetValue(this.key, out cnMsg))
+                if (!dic_ActiveConsolidateMessages.TryGetValue(key, out cnMsg))
                 {
-                    if (!this.Equals(cnMsg))
+                    if (!Equals(cnMsg))
                     {
-                        if (ConsolidateMessage.dic_ActiveConsolidateMessages.TryAdd(this.key, this))
+                        if (dic_ActiveConsolidateMessages.TryAdd(key, this))
                         {
                             return true;
                         }
@@ -595,7 +595,7 @@ namespace Interfaz.Models
             try
             {
                 ConsolidateMessage cnMsg = new ConsolidateMessage();
-                if (!ConsolidateMessage.dic_ActiveConsolidateMessages.TryRemove(this.key, out cnMsg))
+                if (!dic_ActiveConsolidateMessages.TryRemove(key, out cnMsg))
                 {
                     return true;
                 }
@@ -622,7 +622,7 @@ namespace Interfaz.Models
                     specificRelevantInstruction = UtilityAssistant.ExtractValues(strMessage, "MS");
                 }
 
-                if (String.IsNullOrWhiteSpace(specificRelevantInstruction))
+                if (string.IsNullOrWhiteSpace(specificRelevantInstruction))
                 {
                     return false;
                 }
@@ -658,7 +658,7 @@ namespace Interfaz.Models
                         if (!string.IsNullOrWhiteSpace(tempString))
                         {
                             ConsolidateMessage cnMsg = new ConsolidateMessage();
-                            if (ConsolidateMessage.TryCreateFromJson(tempString, out cnMsg))
+                            if (TryCreateFromJson(tempString, out cnMsg))
                             {
                                 cnMsg.SelfRegister();
                                 //ConsolidateMessage.dic_ActiveConsolidateMessages.TryAdd(cnMsg.key, cnMsg);
@@ -690,7 +690,7 @@ namespace Interfaz.Models
                 string strMessage = UtilityAssistant.CleanJSON(message);
                 string specificRelevantInstruction = UtilityAssistant.ExtractValues(strMessage, "MS");
 
-                if (String.IsNullOrWhiteSpace(specificRelevantInstruction))
+                if (string.IsNullOrWhiteSpace(specificRelevantInstruction))
                 {
                     return false;
                 }
@@ -707,7 +707,7 @@ namespace Interfaz.Models
                 if (!string.IsNullOrWhiteSpace(nwMsg.TextOriginal))
                 {
                     ConsolidateMessage cnMsg = new ConsolidateMessage();
-                    if (ConsolidateMessage.TryCreateFromJson(nwMsg.TextOriginal, out cnMsg))
+                    if (TryCreateFromJson(nwMsg.TextOriginal, out cnMsg))
                     {
                         cnMsg.SelfRegister();
                         //ConsolidateMessage.dic_ActiveConsolidateMessages.TryAdd(cnMsg.key, cnMsg);
@@ -738,9 +738,9 @@ namespace Interfaz.Models
                     return false;
                 }
 
-                if (ConsolidateMessage.dic_ActiveConsolidateMessages.Count > 0)
+                if (dic_ActiveConsolidateMessages.Count > 0)
                 {
-                    foreach (ConsolidateMessage item in ConsolidateMessage.dic_ActiveConsolidateMessages.Values.ToList())
+                    foreach (ConsolidateMessage item in dic_ActiveConsolidateMessages.Values.ToList())
                     {
                         if (item.IdRef == message.IdRef)
                         {
@@ -756,13 +756,13 @@ namespace Interfaz.Models
                     if (!string.IsNullOrWhiteSpace(message.TextOriginal))
                     {
                         ConsolidateMessage cnMsg = new ConsolidateMessage();
-                        if (ConsolidateMessage.TryCreateFromJson(message.TextOriginal, out cnMsg))
+                        if (TryCreateFromJson(message.TextOriginal, out cnMsg))
                         {
                             cnMsg.SelfRegister();
                             //ConsolidateMessage.dic_ActiveConsolidateMessages.TryAdd(cnMsg.key, cnMsg);
                         }
 
-                        foreach (ConsolidateMessage item in ConsolidateMessage.dic_ActiveConsolidateMessages.Values.ToList())
+                        foreach (ConsolidateMessage item in dic_ActiveConsolidateMessages.Values.ToList())
                         {
                             if (item.IdRef == message.IdRef)
                             {
@@ -794,9 +794,9 @@ namespace Interfaz.Models
                     return false;
                 }
 
-                if (ConsolidateMessage.dic_ActiveConsolidateMessages.Count > 0)
+                if (dic_ActiveConsolidateMessages.Count > 0)
                 {
-                    foreach (ConsolidateMessage item in ConsolidateMessage.dic_ActiveConsolidateMessages.Values.ToList())
+                    foreach (ConsolidateMessage item in dic_ActiveConsolidateMessages.Values.ToList())
                     {
                         if (item.IdRef == message.IdRef)
                         {
@@ -812,13 +812,13 @@ namespace Interfaz.Models
                     if (!string.IsNullOrWhiteSpace(message.TextOriginal))
                     {
                         ConsolidateMessage cnMsg = new ConsolidateMessage();
-                        if (ConsolidateMessage.TryCreateFromJson(message.TextOriginal, out cnMsg))
+                        if (TryCreateFromJson(message.TextOriginal, out cnMsg))
                         {
                             cnMsg.SelfRegister();
                             //ConsolidateMessage.dic_ActiveConsolidateMessages.TryAdd(cnMsg.key, cnMsg);
                         }
 
-                        foreach (ConsolidateMessage item in ConsolidateMessage.dic_ActiveConsolidateMessages.Values.ToList())
+                        foreach (ConsolidateMessage item in dic_ActiveConsolidateMessages.Values.ToList())
                         {
                             if (item.IdRef == message.IdRef)
                             {
@@ -862,11 +862,11 @@ namespace Interfaz.Models
                 txt = UtilityAssistant.CleanJSON(txt);
                 ConsolidateMessage cdMsg = System.Text.Json.JsonSerializer.Deserialize<ConsolidateMessage>(txt);
 
-                this.parts = cdMsg.parts;
-                this.text = cdMsg.text;
-                this.length = cdMsg.length;
-                this.idRef = cdMsg.idRef;
-                this.key = cdMsg.key;
+                parts = cdMsg.parts;
+                text = cdMsg.text;
+                length = cdMsg.length;
+                idRef = cdMsg.idRef;
+                key = cdMsg.key;
 
                 return cdMsg;
             }
@@ -885,11 +885,11 @@ namespace Interfaz.Models
                 txt = UtilityAssistant.CleanJSON(txt);
                 ConsolidateMessage cdMsg = System.Text.Json.JsonSerializer.Deserialize<ConsolidateMessage>(txt);
 
-                this.parts = cdMsg.parts;
-                this.text = cdMsg.text;
-                this.length = cdMsg.length;
-                this.idRef = cdMsg.idRef;
-                this.Key = cdMsg.Key;
+                parts = cdMsg.parts;
+                text = cdMsg.text;
+                length = cdMsg.length;
+                idRef = cdMsg.idRef;
+                Key = cdMsg.Key;
 
                 return true;
             }

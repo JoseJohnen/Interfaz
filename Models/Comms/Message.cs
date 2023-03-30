@@ -1,11 +1,11 @@
-﻿using Interfaz.Code.Models;
+﻿using Interfaz.Models.Auxiliary;
 using Interfaz.Utilities;
 using System;
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Interfaz.Models
+namespace Interfaz.Models.Comms
 {
     public enum StatusMessage { Error = -2, NonRelevantUsage = -1, ReadyToSend = 0, Delivered = 1, Executed = 2 }
 
@@ -39,14 +39,14 @@ namespace Interfaz.Models
                     text = value;
                     return;
                 }
-                string tempText = Utilities.UtilityAssistant.Base64Encode(value);
+                string tempText = UtilityAssistant.Base64Encode(value);
                 int remanent = 150;
-                if (tempText.Length > remanent && !this.IsBlockMultiMessage)
+                if (tempText.Length > remanent && !IsBlockMultiMessage)
                 {
                     ConsolidateMessage csMsg = ConsolidateMessage.CreateConsolidateMessage(tempText);
                     if (csMsg != null)
                     {
-                        text = Utilities.UtilityAssistant.Base64Encode("CM:" + csMsg.ToJson()); //No se pone TAG porque funciona antes del sistema de TAG
+                        text = UtilityAssistant.Base64Encode("CM:" + csMsg.ToJson()); //No se pone TAG porque funciona antes del sistema de TAG
                     }
                     else
                     {
@@ -57,7 +57,7 @@ namespace Interfaz.Models
                 {
                     text = tempText;
                 }
-                this.Length = (uint)text.Length;
+                Length = (uint)text.Length;
                 /*Console.BackgroundColor = ConsoleColor.Blue;
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("\n\nSize of the message is: " + text.Length + " total");
@@ -215,7 +215,7 @@ namespace Interfaz.Models
         {
             try
             {
-                string result = System.Text.Json.JsonSerializer.Serialize(this);
+                string result = JsonSerializer.Serialize(this);
                 return result;
             }
             catch (Exception ex)
@@ -231,13 +231,13 @@ namespace Interfaz.Models
             try
             {
                 txt = UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
-                Message nwMsg = System.Text.Json.JsonSerializer.Deserialize<Message>(txt);
+                Message nwMsg = JsonSerializer.Deserialize<Message>(txt);
                 if (nwMsg != null)
                 {
-                    this.text = nwMsg.text;
-                    this.length = nwMsg.length;
-                    this.IdRef = nwMsg.IdRef;
-                    this.IdMsg = nwMsg.IdMsg;
+                    text = nwMsg.text;
+                    length = nwMsg.length;
+                    IdRef = nwMsg.IdRef;
+                    IdMsg = nwMsg.IdMsg;
                 }
                 return nwMsg;
             }

@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Interfaz.Models
+namespace Interfaz.Models.Comms
 {
     public class StateObject
     {

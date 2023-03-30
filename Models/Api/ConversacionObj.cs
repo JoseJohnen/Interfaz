@@ -1,9 +1,10 @@
-﻿using Interfaz.Utilities;
+﻿using Interfaz.Models.Shots;
+using Interfaz.Utilities;
 using Newtonsoft.Json;
 using System.Collections.Immutable;
 using System.Text.Json;
 
-namespace Interfaz.Models
+namespace Interfaz.Models.Api
 {
     public class ConversacionObj
     {
@@ -46,9 +47,9 @@ namespace Interfaz.Models
         {
             try
             {
-                if(string.IsNullOrWhiteSpace(json))
+                if (string.IsNullOrWhiteSpace(json))
                 {
-                    return new ConversacionObj(); 
+                    return new ConversacionObj();
                 }
 
                 json = UtilityAssistant.CleanJSON(json);
@@ -67,7 +68,7 @@ namespace Interfaz.Models
                 ConversacionObj conObj = System.Text.Json.JsonSerializer.Deserialize<ConversacionObj>(json, serializeOptions);//, serializeOptions);
                 //this = prgObj;
 
-                if(conObj == null)
+                if (conObj == null)
                 {
                     return new ConversacionObj();
                 }
@@ -100,24 +101,24 @@ namespace Interfaz.Models
         {
             try
             {
-                if (this.L_Bullets_to_create == null)
+                if (L_Bullets_to_create == null)
                 {
-                    this.L_Bullets_to_create = new List<Shot>();
+                    L_Bullets_to_create = new List<Shot>();
                 }
 
-                if (this.L_Bullets_to_update == null)
+                if (L_Bullets_to_update == null)
                 {
-                    this.L_Bullets_to_update = new List<ShotPosUpdate>();
+                    L_Bullets_to_update = new List<ShotPosUpdate>();
                 }
 
-                if (this.L_Bullets_to_change_state == null)
+                if (L_Bullets_to_change_state == null)
                 {
-                    this.L_Bullets_to_change_state = new List<ShotState>();
+                    L_Bullets_to_change_state = new List<ShotState>();
                 }
 
-                this.LoadShots();
-                this.LoadShotPosUpdates();
-                this.LoadShotStates();
+                LoadShots();
+                LoadShotPosUpdates();
+                LoadShotStates();
                 return this;
             }
             catch (Exception ex)
@@ -131,26 +132,26 @@ namespace Interfaz.Models
         {
             try
             {
-                if(this.L_Bullets_to_create == null)
+                if (L_Bullets_to_create == null)
                 {
-                    this.L_Bullets_to_create = new List<Shot>();
+                    L_Bullets_to_create = new List<Shot>();
                 }
 
                 string tmpItem = string.Empty;
-                foreach (string item in this.l_bullets_to_create)
+                foreach (string item in l_bullets_to_create)
                 {
-                    if(string.IsNullOrWhiteSpace(item))
+                    if (string.IsNullOrWhiteSpace(item))
                     {
                         continue;
                     }
                     tmpItem = UtilityAssistant.CleanJSON(item);
-                    this.L_Bullets_to_create.Add(Shot.CreateFromJson(tmpItem));
+                    L_Bullets_to_create.Add(Shot.CreateFromJson(tmpItem));
                 }
-                return this.L_Bullets_to_create;
+                return L_Bullets_to_create;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Console.WriteLine("Error: (ConversacionObj) LoadShots(): "+ ex.Message);
+                Console.WriteLine("Error: (ConversacionObj) LoadShots(): " + ex.Message);
                 return new List<Shot>();
             }
         }
@@ -159,22 +160,22 @@ namespace Interfaz.Models
         {
             try
             {
-                if (this.L_Bullets_to_update == null)
+                if (L_Bullets_to_update == null)
                 {
-                    this.L_Bullets_to_update = new List<ShotPosUpdate>();
+                    L_Bullets_to_update = new List<ShotPosUpdate>();
                 }
 
                 string tmpItem = string.Empty;
-                foreach (string item in this.l_bullets_to_update)
+                foreach (string item in l_bullets_to_update)
                 {
                     if (string.IsNullOrWhiteSpace(item))
                     {
                         continue;
                     }
                     tmpItem = UtilityAssistant.CleanJSON(item);
-                    this.L_Bullets_to_update.Add(ShotPosUpdate.CreateFromJson(tmpItem));
+                    L_Bullets_to_update.Add(ShotPosUpdate.CreateFromJson(tmpItem));
                 }
-                return this.L_Bullets_to_update;
+                return L_Bullets_to_update;
             }
             catch (Exception ex)
             {
@@ -187,22 +188,22 @@ namespace Interfaz.Models
         {
             try
             {
-                if (this.L_Bullets_to_change_state == null)
+                if (L_Bullets_to_change_state == null)
                 {
-                    this.L_Bullets_to_change_state = new List<ShotState>();
+                    L_Bullets_to_change_state = new List<ShotState>();
                 }
 
                 string tmpItem = string.Empty;
-                foreach (string item in this.l_bullets_to_change_state)
+                foreach (string item in l_bullets_to_change_state)
                 {
                     if (string.IsNullOrWhiteSpace(item))
                     {
                         continue;
                     }
                     tmpItem = UtilityAssistant.CleanJSON(item);
-                    this.L_Bullets_to_change_state.Add(ShotState.CreateFromJson(tmpItem));
+                    L_Bullets_to_change_state.Add(ShotState.CreateFromJson(tmpItem));
                 }
-                return this.L_Bullets_to_change_state;
+                return L_Bullets_to_change_state;
             }
             catch (Exception ex)
             {
@@ -229,14 +230,14 @@ namespace Interfaz.Models
                 JsonDocument jsonDoc = JsonDocument.ParseValue(ref reader);
                 string tempString = jsonDoc.RootElement.GetRawText();
 
-                readerReceiver = Interfaz.Utilities.UtilityAssistant.CleanJSON(tempString);
+                readerReceiver = UtilityAssistant.CleanJSON(tempString);
                 if (string.IsNullOrWhiteSpace(readerReceiver) || readerReceiver.Equals("\"{\""))
                 {
                     return new ConversacionObj();
                 }
 
                 strJsonArray = readerReceiver.Split("],");
-                if(strJsonArray.Length > 1)
+                if (strJsonArray.Length > 1)
                 {
                     strJsonArray[0] += "]";
                     strJsonArray[1] += "]";
@@ -244,10 +245,10 @@ namespace Interfaz.Models
                 ConversacionObj conObj = new ConversacionObj();
 
                 string strTemp = strJsonArray[0].Substring(strJsonArray[0].IndexOf("l_bullets_to_create")).Replace("l_bullets_to_create", "");
-                strTemp = strTemp.Substring(4).Replace("[","").Replace("]","");
+                strTemp = strTemp.Substring(4).Replace("[", "").Replace("]", "").Replace("}}", "}");
                 string str_bullets_to_create = strTemp;
 
-                if(!string.IsNullOrWhiteSpace(str_bullets_to_create))
+                if (!string.IsNullOrWhiteSpace(str_bullets_to_create))
                 {
                     //Array.Clear(strStrArr, 0, strStrArr.Length);
                     str_bullets_to_create = str_bullets_to_create.Replace("},{", "}|°|{");
@@ -261,9 +262,9 @@ namespace Interfaz.Models
                 }
 
                 string strTemp2 = strJsonArray[1].Substring(strJsonArray[1].IndexOf("l_bullets_to_update")).Replace("l_bullets_to_update", "");
-                strTemp2 = strTemp2.Substring(4).Replace("[", "").Replace("]", "");
+                strTemp2 = strTemp2.Substring(4).Replace("[", "").Replace("]", "").Replace("}}", "}");
                 string str_bullets_to_update = strTemp2;
-                
+
                 if (!string.IsNullOrWhiteSpace(str_bullets_to_update))
                 {
                     str_bullets_to_update = str_bullets_to_update.Replace("},{", "}|°|{");
@@ -315,11 +316,12 @@ namespace Interfaz.Models
                 last = conObj.l_bullets_to_create.Count;
                 foreach (string item in conObj.l_bullets_to_create)
                 {
-                    strTemp += "\"" + item +"\"";
-                    if(i < (last-1))
+                    strTemp += "\"" + item + "\"";
+                    if (i < last - 1)
                     {
                         strTemp += ",";
                     }
+                    i++;
                 }
                 strTemp += "],";
                 i = 0;
@@ -329,22 +331,25 @@ namespace Interfaz.Models
                 foreach (string item in conObj.l_bullets_to_update)
                 {
                     strTemp += "\"" + item + "\"";
-                    if (i < (last - 1))
+                    if (i < last - 1)
                     {
                         strTemp += ",";
                     }
+                    i++;
                 }
                 strTemp += "],";
+                i = 0;
 
                 strTemp += "\"l_bullets_to_change_state\" : [";
                 last = conObj.l_bullets_to_change_state.Count;
                 foreach (string item in conObj.l_bullets_to_change_state)
                 {
                     strTemp += "\"" + item + "\"";
-                    if (i < (last - 1))
+                    if (i < last - 1)
                     {
                         strTemp += ",";
                     }
+                    i++;
                 }
                 strTemp += "]";
                 strTemp += "}";
@@ -353,7 +358,7 @@ namespace Interfaz.Models
 
                 while (strTemp.Contains("\"\""))
                 {
-                    strTemp = strTemp.Replace("\"\"","\"");
+                    strTemp = strTemp.Replace("\"\"", "\"");
                 }
 
                 while (strTemp.Contains("\\"))
