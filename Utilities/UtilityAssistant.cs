@@ -222,6 +222,39 @@ namespace Interfaz.Utilities
             }
         }
 
+        /// <summary>
+        /// Extract the value of the specific field in the Json, it eliminates everything else
+        /// </summary>
+        /// <param name="instruction">the JSON from which its gonna extract the value</param>
+        /// <param name="valueName">the name of the field to extract</param>
+        /// <returns>the value extacted</returns>
+        public static string ExtractValue(string instruction, string valueName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(instruction))
+                {
+                    return string.Empty;
+                }
+
+                string result = instruction;
+                result = result.Substring(result.IndexOf("\"" + valueName + "\":"));
+                if(result.Contains(","))
+                {
+                    result = result.Replace(result.Substring(result.IndexOf(",")), "");
+                }
+                string aarg = "\"" + valueName + "\":";
+                result = result.Replace(aarg, "");
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string ExtractValues(string, string): " + ex.Message);
+                return String.Empty;
+            }
+        }
+
         public static string ExtractAIInstructionData(string instruction, string valueName)
         {
             try
@@ -910,6 +943,40 @@ namespace Interfaz.Utilities
                 Console.ResetColor();
                 result = base64EncodedData;
                 return false;
+            }
+        }
+
+        public static Vector3 Vector3Deserializer(string vector3Json)
+        {
+            string strJson = vector3Json;
+            try
+            {
+                //TODO: Corregir, testear y terminar
+                //strJson = reader.GetString();
+                strJson = strJson.Replace("\"", "").Replace("{a:", "").Replace("{ a:", "").Replace("}", "").Trim();
+
+                if (strJson.Contains(".�M�"))
+                {
+                    //Because it's incomplete
+                    return Vector3.Zero;
+                }
+
+                //strJson = strJson.Replace("´┐¢M´┐¢", "").Replace(".�M�","");
+                string[] secondStep = strJson.Replace("<", "").Replace("u003C", "").Replace(">", "").Replace("u003E", "").Replace("\\", "").Replace("\"", "").Split("|");
+
+                string a = secondStep[0].Replace(".", ",").Trim();
+                string b = secondStep[1].Replace(".", ",").Trim();
+                string c = secondStep[2].Replace(".", ",").Trim();
+
+                //string[] strArray = strJson.Replace("{","").Replace("}","").Split(',');
+
+                Vector3 vector3 = new Vector3((float)Convert.ToDouble(a), (float)Convert.ToDouble(b), (float)Convert.ToDouble(c));
+                return vector3;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: (Vector3Converter) Read(): {0} Message: {1}", strJson, ex.Message);
+                return default(Vector3);
             }
         }
     }

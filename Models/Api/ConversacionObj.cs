@@ -19,6 +19,7 @@ namespace Interfaz.Models.Api
         [JsonIgnore]
         public List<ShotState> L_Bullets_to_change_state = new List<ShotState>();
 
+        #region Métodos JSON
         public string ToJson()
         {
             try
@@ -95,6 +96,7 @@ namespace Interfaz.Models.Api
                 return new ConversacionObj();
             }
         }
+        #endregion
 
         #region Load Lists
         public ConversacionObj Load()

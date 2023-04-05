@@ -21,7 +21,7 @@ namespace Interfaz.Models.Comms
         public BlockingCollection<string> l_ReceiveQueueMessages { get; set; }
         public BlockingCollection<string> l_ReceiveBigMessages { get; set; }
 
-        public Player player { get; set; }
+        public Player player { get; set; } = new Player();
 
         public ConcurrentDictionary<uint, Message> dic_RegisterMessages { get; set; }
         public NetworkStream StreamNetwork { get; set; }

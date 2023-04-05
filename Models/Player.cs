@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace Interfaz.Models
 {
-    public partial class Player : Puppet
+    public class Player 
     {
         private Vector3 lstPosition = new Vector3();
         private Vector3 lstWeapon = new Vector3(-0.5f, 0f, 0f);
@@ -17,56 +17,67 @@ namespace Interfaz.Models
         private Vector3 lstRightarm = new Vector3(0f, 0f, -0.5f);
 
         private Quaternion lstRotation = new Quaternion();
+        
+        private Vector3 position = new Vector3();
+        private Vector3 weapon = new Vector3(0, 0, -0.1f);
+        private Vector3 leftarm = new Vector3(-0.1f, 0, 0);
+        private Vector3 rightarm = new Vector3(0.1f, 0, 0);
+        private Quaternion rotation = Quaternion.Identity;
+
         public static Player plyr;
 
-        public override Vector3 Position
+        public Vector3 Position
         {
-            get => base.Position; set
+            get => position; set
             {
-                lstPosition = base.Position;
-                base.Position = value;
+                lstPosition = position;
+                position = value;
             }
         }
-        public override Vector3 Weapon
+        public Vector3 Weapon
         {
-            get => base.Weapon; set
+            get => weapon; set
             {
-                lstWeapon = base.Weapon;
-                base.Weapon = value;
+                lstWeapon = weapon;
+                weapon = value;
             }
         }
-        public override Vector3 Leftarm
+        public Vector3 Leftarm
         {
-            get => base.Leftarm; set
+            get => leftarm; set
             {
-                lstLeftarm = base.Leftarm;
-                base.Leftarm = value;
+                lstLeftarm = leftarm;
+                leftarm = value;
             }
         }
-        public override Vector3 Rightarm
+        public Vector3 Rightarm
         {
-            get => base.Rightarm; set
+            get => rightarm; set
             {
-                lstRightarm = base.Rightarm;
-                base.Rightarm = value;
+                lstRightarm = rightarm;
+                rightarm = value;
             }
         }
-        public override Quaternion Rotation
+        public Quaternion Rotation
         {
-            get => base.Rotation; set
+            get => rotation; set
             {
-                lstRotation = base.Rotation;
-                base.Rotation = value;
+                lstRotation = rotation;
+                rotation = value;
             }
         }
+
+        public float HP { get; set; } = 50;
+        public float VelocityModifier { get; set; } = 1.5f;
+        public bool IsFlyer { get; set; } = false;
+        public float MPKillBox { get; set; } = 0.5f;
 
         public Vector3 LstPosition { get => lstPosition; }
         public Vector3 LstWeapon { get => lstWeapon; }
         public Vector3 LstLeftarm { get => lstLeftarm; }
         public Vector3 LstRightarm { get => lstRightarm; }
         public Quaternion LstRotation { get => lstRotation; }
-        public override string Name { get; set; } = "TODO: PlayerNameExtractedFromDBWhenLogin";
-        public override IA_Instructions IA_Instructions { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string Name { get; set; } = "TODO: PlayerNameExtractedFromDBWhenLogin";
 
         public static string SetLoad(TcpClient tcpClient, string receivedRelevantInformation)
         {
@@ -87,12 +98,14 @@ namespace Interfaz.Models
                 PlayerData pldt = JsonSerializer.Deserialize<PlayerData>(specificRelevantInstruction);
 
                 string tempString = string.Empty;
-                plyr = new Player();
-                plyr.Weapon = new Interfaz.Utilities.SerializedVector3(pldt.WP).ConvertToVector3();
-                plyr.Leftarm = new Interfaz.Utilities.SerializedVector3(pldt.LS).ConvertToVector3();
-                plyr.Rightarm = new Interfaz.Utilities.SerializedVector3(pldt.RS).ConvertToVector3();
-                plyr.Position = new Interfaz.Utilities.SerializedVector3(pldt.PS).ConvertToVector3();
-                plyr.Rotation = Interfaz.Utilities.UtilityAssistant.StringToQuaternion(pldt.RT);
+                plyr = new Player
+                {
+                    Weapon = new Interfaz.Utilities.SerializedVector3(pldt.WP).ConvertToVector3(),
+                    Leftarm = new Interfaz.Utilities.SerializedVector3(pldt.LS).ConvertToVector3(),
+                    Rightarm = new Interfaz.Utilities.SerializedVector3(pldt.RS).ConvertToVector3(),
+                    Position = new Interfaz.Utilities.SerializedVector3(pldt.PS).ConvertToVector3(),
+                    Rotation = Interfaz.Utilities.UtilityAssistant.StringToQuaternion(pldt.RT)
+                };
 
                 #region Original SetLoad DataFlow
                 //position = new SerializedVector3(UtilityAssistant.ExtractValues(receivedRelevantInformation, "PS")).ConvertToVector3();
@@ -158,7 +171,7 @@ namespace Interfaz.Models
                 }*/
                 #endregion
 
-                plyr.TcpClient = tcpClient;
+                //plyr.TcpClient = tcpClient;
                 return receivedRelevantInformation;
             }
             catch (Exception ex)
@@ -170,11 +183,11 @@ namespace Interfaz.Models
 
         public Player()
         {
-            base.Weapon = new Vector3(-0.5f, 0f, 0f);
-            base.Position = new Vector3(0f, 0f, 0f);
-            base.Leftarm = new Vector3(0f, 0f, 0.5f);
-            base.Rightarm = new Vector3(0f, 0f, -0.5f);
-            base.Rotation = new Quaternion();
+            Weapon = new Vector3(-0.5f, 0f, 0f);
+            Position = new Vector3(0f, 0f, 0f);
+            Leftarm = new Vector3(0f, 0f, 0.5f);
+            Rightarm = new Vector3(0f, 0f, -0.5f);
+            Rotation = new Quaternion();
         }
         
         //3U + 2F + 5R
@@ -239,7 +252,7 @@ namespace Interfaz.Models
             return result;
         }
 
-        public override string ToJson()
+        public string ToJson()
         {
             try
             {
@@ -307,10 +320,7 @@ namespace Interfaz.Models
             }
         }
 
-        public override void RunIAServer(string instruciones, Vector3 target)
-        {
-            throw new NotImplementedException();
-        }
+     
     }
 
     public class PlayerConverter : System.Text.Json.Serialization.JsonConverter<Player>
