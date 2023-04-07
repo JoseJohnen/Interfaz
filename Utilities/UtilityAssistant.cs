@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
@@ -124,6 +123,68 @@ namespace Interfaz.Utilities
             }
         }
 
+        /// <summary>
+        /// Recibe un string en formato 'X:# Y:# Z:# W:#' y lo convierte en un Quaternion con dichos parámetros, luego retorna dicho Quaternion.
+        /// </summary>
+        /// <param name="information">String containing the quaternion information in format X:# Y:# Z:# W:#</param>
+        /// <returns></returns>
+        public static Quaternion StringToQuaternion(string information)
+        {
+            try
+            {
+                string sQuaternion = "(" + information.Replace(",", ".").Replace(" ", ",").Replace("}", "").Replace("{", "") + ")";
+                // Remove the parentheses
+                if (sQuaternion.StartsWith("(") && sQuaternion.EndsWith(")"))
+                {
+                    sQuaternion = sQuaternion.Substring(1, sQuaternion.Length - 2);
+                }
+
+                // split the items
+                string[] sArray = sQuaternion.Split(',');
+
+                // store as a Vector3
+                Quaternion result = new Quaternion(
+                    float.Parse(sArray[0].Replace(".", ",").Substring(2)),
+                    float.Parse(sArray[1].Replace(".", ",").Substring(2)),
+                    float.Parse(sArray[2].Replace(".", ",").Substring(2)),
+                    float.Parse(sArray[3].Replace(".", ",").Substring(2)));
+
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Quaternion StringToQuaternion(string): " + ex.Message, ConsoleColor.Red);
+                return Quaternion.Identity;
+            }
+        }
+
+        public static Quaternion ToQuaternion(Vector3 v)
+        {
+            try
+            {
+                float cy = (float)Math.Cos(v.Z * 0.5);
+                float sy = (float)Math.Sin(v.Z * 0.5);
+                float cp = (float)Math.Cos(v.Y * 0.5);
+                float sp = (float)Math.Sin(v.Y * 0.5);
+                float cr = (float)Math.Cos(v.X * 0.5);
+                float sr = (float)Math.Sin(v.X * 0.5);
+
+                return new Quaternion
+                {
+                    W = (cr * cp * cy + sr * sp * sy),
+                    X = (sr * cp * cy - cr * sp * sy),
+                    Y = (cr * sp * cy + sr * cp * sy),
+                    Z = (cr * cp * sy - sr * sp * cy)
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Quaternion ToQuaternion(Vector3): " + ex.Message, ConsoleColor.Red);
+                return Quaternion.Identity;
+            }
+        }
+
         public static string ExtractValues(string instructions, string particle, out string part1, out string part2)
         {
             try
@@ -238,7 +299,20 @@ namespace Interfaz.Utilities
                 }
 
                 string result = instruction;
-                result = result.Substring(result.IndexOf("\"" + valueName + "\":"));
+                if(instruction.Contains("\u0022"))
+                {
+                    result = UtilityAssistant.CleanJSON(instruction);
+                }
+
+                if(result.Contains("\"" + valueName + "\":"))
+                {
+                    result = result.Substring(result.IndexOf("\"" + valueName + "\":"));
+                }
+                else if(result.Contains(valueName))
+                {
+                    result = result.Substring(result.IndexOf(valueName));
+                }
+
                 if(result.Contains(","))
                 {
                     result = result.Replace(result.Substring(result.IndexOf(",")), "");
@@ -839,7 +913,7 @@ namespace Interfaz.Utilities
                         }
                         if (strTemp.Contains("}"))
                         {
-                            strTemp = strTemp.Substring(0, strTemp.IndexOf("}"));
+                            strTemp = strTemp.Substring(0, strTemp.IndexOf("}")+1);
                         }
                     }
 

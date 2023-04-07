@@ -1,25 +1,34 @@
-﻿using Interfaz.Models.Puppets;
+﻿using Interfaz.Models.Area;
+using Interfaz.Models.Puppets;
 using Interfaz.Models.Tiles;
 using Interfaz.Utilities;
 using System.Collections.Concurrent;
+using System.Numerics;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Interfaz.Models.Worlds
 {
-
     public abstract class World
     {
-        public int FrontBack;
-        public int WestEast;
-        public int Height;
+        public float FrontBack;
+        public float WestEast;
+        public float Height;
         public string Name;
         //public Tile_Primus[,,] worldTiles;
         public ConcurrentDictionary<string, Tile> dic_worldTiles = new ConcurrentDictionary<string, Tile>();
-        public Dictionary<Puppet,int> dic_SpawnList = new Dictionary<Puppet, int>();
+        public Dictionary<Puppet,int> dic_SpawnList = new Dictionary<Puppet, int>(); 
+        public System.Numerics.Vector3 Location { get; set; } = new System.Numerics.Vector3(0, 0, 0);
+
+
+        public Interfaz.Models.Area.Area Area = new Interfaz.Models.Area.Area(new List<AreaDefiner>() {
+            new AreaDefiner(),
+            new AreaDefiner(),
+            new AreaDefiner(),
+            new AreaDefiner(),
+        });
 
         //public List<Tile_Primus> l_FloorTiles = new List<Tile_Primus>();
         
@@ -29,6 +38,31 @@ namespace Interfaz.Models.Worlds
             Height = height;
             FrontBack = frontBack;
             Name = name;
+        }
+
+        public virtual bool IsInsideAreaWorld(Vector3 position)
+        {
+            try
+            {
+                AreaDefiner NW = this.Area.Where(c => c.Point.Item1 == "NW").First();
+                AreaDefiner NE = this.Area.Where(c => c.Point.Item1 == "NE").First();
+                AreaDefiner SW = this.Area.Where(c => c.Point.Item1 == "SW").First();
+                AreaDefiner SE = this.Area.Where(c => c.Point.Item1 == "SE").First();
+
+                if((NW.Point.Item2.Z <= position.Z) && (SE.Point.Item2.Z >= position.Z))
+                {
+                    if((NW.Point.Item2.X <= position.X) && (SE.Point.Item2.X >= position.X))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error bool IsInsideAreaWorld(Vector3): " + ex.Message);
+                return false;
+            }
         }
 
         public virtual World RegisterWorld(string nameOfTheWorld = "")
@@ -50,7 +84,7 @@ namespace Interfaz.Models.Worlds
         //    }
         }
 
-        public virtual World FillWorld()
+        public virtual World FillWorld(string TileClass = "")
         {
             try
             {
@@ -511,6 +545,12 @@ namespace Interfaz.Models.Worlds
                 strValue = UtilityAssistant.ExtractValue(tempString, "FrontBack");
                 wrldObj.FrontBack = Convert.ToInt32(strValue);
                 wrldObj.Name = UtilityAssistant.ExtractValue(tempString, "Name");
+                strValue = UtilityAssistant.ExtractValue(tempString, "Location");
+                wrldObj.Location = Vector3Converter.Converter(strValue);
+
+                strValue = UtilityAssistant.ExtractValue(tempString, "Area");
+                wrldObj.Area = Area.Area.CreateFromJson(strValue);
+                
 
                 /*if (string.IsNullOrWhiteSpace(readerReceiver) || readerReceiver.Equals("\"{\""))
                 {
@@ -605,6 +645,20 @@ namespace Interfaz.Models.Worlds
                 string FrontBack = wldObj.FrontBack.ToString();
                 string Name = string.IsNullOrWhiteSpace(wldObj.Name) ? "null" : wldObj.Name;
 
+                JsonSerializerOptions serializeOptions = new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new Vector3Converter()
+                        ,new NullConverter()
+                    },
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    WriteIndented = true,
+                    IgnoreNullValues = true
+                };
+
+                string Location = System.Text.Json.JsonSerializer.Serialize(wldObj.Location, serializeOptions);
+                string Area = wldObj.Area.ToJson();
                 string Class = wldObj.GetType().Name;
 
                 char[] a = { '"' };
@@ -614,6 +668,8 @@ namespace Interfaz.Models.Worlds
                     ", ", new string(a), "WestEast", new string(a), ":", WestEast,
                     ", ", new string(a), "Height", new string(a), ":", Height,
                     ", ", new string(a), "FrontBack", new string(a), ":", FrontBack,
+                    ", ", new string(a), "Location", new string(a), ":", Location,
+                    ", ", new string(a), "Area", new string(a), ":", Area,
                     ", ", strTemp,
                     "}");
 
