@@ -3,7 +3,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using Interfaz.Utilities;
+using Interfaz.Auxiliary;
 using Newtonsoft.Json;
 
 namespace Interfaz.Models.Shots

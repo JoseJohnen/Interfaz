@@ -1,6 +1,6 @@
 ﻿using Interfaz.Models.Area;
 using Interfaz.Models.Auxiliary;
-using Interfaz.Utilities;
+using Interfaz.Auxiliary;
 using System.Numerics;
 using System.Reflection;
 using System.Text.Encodings.Web;
@@ -63,7 +63,7 @@ namespace Interfaz.Models
             string txt = Text;
             try
             {
-                txt = Interfaz.Utilities.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
+                txt = Interfaz.Auxiliary.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
 
                 JsonSerializerOptions serializeOptions = new JsonSerializerOptions
                 {
@@ -145,22 +145,20 @@ namespace Interfaz.Models
                     this.Name = name;
                 }
 
-                if (!string.IsNullOrEmpty(nameSprite))
-                {
                     this.Position = Pos;
 
                     // Get the size of the sprite
                     spriteSize = new Vector2(0.8f, 0.8f);
 
                     // Calculate the corners of the sprite
-                    Vector3 topLeft = MMO_Client.Code.Assistants.UtilityAssistant.ConvertVector3StrideToNumeric(entity.Transform.WorldMatrix.TranslationVector) + new Vector3(-spriteSize.X / 2, spriteSize.Y / 2, 0);
-                    Vector3 topRight = MMO_Client.Code.Assistants.UtilityAssistant.ConvertVector3StrideToNumeric(entity.Transform.WorldMatrix.TranslationVector) + new Vector3(spriteSize.X / 2, spriteSize.Y / 2, 0);
-                    Vector3 bottomLeft = MMO_Client.Code.Assistants.UtilityAssistant.ConvertVector3StrideToNumeric(entity.Transform.WorldMatrix.TranslationVector) + new Vector3(-spriteSize.X / 2, -spriteSize.Y / 2, 0);
-                    Vector3 bottomRight = MMO_Client.Code.Assistants.UtilityAssistant.ConvertVector3StrideToNumeric(entity.Transform.WorldMatrix.TranslationVector) + new Vector3(spriteSize.X / 2, -spriteSize.Y / 2, 0);
-                    this.Area.L_AreaDefiners[0].Point = new Pares<string, Code.Models.SerializedVector3>() { Item1 = "NW", Item2 = new Code.Models.SerializedVector3(topLeft) };
-                    this.Area.L_AreaDefiners[1].Point = new Pares<string, Code.Models.SerializedVector3>() { Item1 = "NE", Item2 = new Code.Models.SerializedVector3(topRight) };
-                    this.Area.L_AreaDefiners[2].Point = new Pares<string, Code.Models.SerializedVector3>() { Item1 = "SW", Item2 = new Code.Models.SerializedVector3(bottomLeft) };
-                    this.Area.L_AreaDefiners[3].Point = new Pares<string, Code.Models.SerializedVector3>() { Item1 = "SE", Item2 = new Code.Models.SerializedVector3(bottomRight) };
+                    Vector3 topLeft = this.position + new Vector3(-spriteSize.X / 2, spriteSize.Y / 2, 0);
+                    Vector3 topRight = this.position + new Vector3(spriteSize.X / 2, spriteSize.Y / 2, 0);
+                    Vector3 bottomLeft = this.position + new Vector3(-spriteSize.X / 2, -spriteSize.Y / 2, 0);
+                    Vector3 bottomRight = this.position + new Vector3(spriteSize.X / 2, -spriteSize.Y / 2, 0);
+                    this.Area.L_AreaDefiners[0].Point = new Pares<string, SerializedVector3>() { Item1 = "NW", Item2 = new SerializedVector3(topLeft) };
+                    this.Area.L_AreaDefiners[1].Point = new Pares<string, SerializedVector3>() { Item1 = "NE", Item2 = new SerializedVector3(topRight) };
+                    this.Area.L_AreaDefiners[2].Point = new Pares<string, SerializedVector3>() { Item1 = "SW", Item2 = new SerializedVector3(bottomLeft) };
+                    this.Area.L_AreaDefiners[3].Point = new Pares<string, SerializedVector3>() { Item1 = "SE", Item2 = new SerializedVector3(bottomRight) };
 
                     //SceneInstance sceneInstance = WorldController.game.SceneSystem.SceneInstance;
                     //this.entity = sceneInstance.RootScene.Entities.Where(c => c.Name == base.Name).FirstOrDefault();
@@ -169,11 +167,11 @@ namespace Interfaz.Models
                     //Entity.Transform.Rotation *= Quaternion.RotationX(Convert.ToSingle(MMO_Client.Code.Assistants.UtilityAssistant.ConvertDegreesToRadiants(90)));
 
                     //More precise rotation
-                    entity.Transform.Rotation *= MMO_Client.Code.Assistants.UtilityAssistant.ConvertSystemNumericsToStrideQuaternion(System.Numerics.Quaternion.CreateFromAxisAngle(Vector3.UnitX, MathF.PI / 2));
+                    //entity.Transform.Rotation *= MMO_Client.Code.Assistants.UtilityAssistant.ConvertSystemNumericsToStrideQuaternion(System.Numerics.Quaternion.CreateFromAxisAngle(Vector3.UnitX, MathF.PI / 2));
 
                     //Entity.Transform.Position = Code.Assistants.UtilityAssistant.ConvertVector3NumericToStride(Pos);
                     return;
-                }
+                
                 Console.WriteLine("Error (MMO_Client.Models.TilesModels.Tile) InstanceTile: SPRITE NO ENCONTRADO PARA CLASE " + this.GetType().FullName);
             }
             catch (Exception ex)

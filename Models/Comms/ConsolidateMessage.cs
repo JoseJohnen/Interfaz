@@ -1,5 +1,5 @@
 ﻿using Interfaz.Models.Auxiliary;
-using Interfaz.Utilities;
+using Interfaz.Auxiliary;
 using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
 

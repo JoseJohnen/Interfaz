@@ -1,5 +1,5 @@
 ﻿using Interfaz.Models.Worlds;
-using Interfaz.Utilities;
+using Interfaz.Auxiliary;
 using System.Drawing;
 using System.Text.Json;
 
@@ -11,10 +11,14 @@ namespace Interfaz.Models.Auxiliary
         public T1 Item1 { get; set; }
         public T2 Item2 { get; set; }
 
-        public Pares(T1 item1, T2 item2)
+        public Pares(T1 item1 = default(T1), T2 item2 = default(T2))
         {
             Item1 = item1;
             Item2 = item2;
+        }
+
+        public Pares()
+        {
         }
 
         #region ForEach Compatibility

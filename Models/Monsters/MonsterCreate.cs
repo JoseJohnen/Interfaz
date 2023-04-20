@@ -1,4 +1,7 @@
-﻿using Interfaz.Utilities;
+﻿using Interfaz.Auxiliary;
+using System.Numerics;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 
 namespace Interfaz.Models.Monsters
 {
@@ -6,6 +9,7 @@ namespace Interfaz.Models.Monsters
     {
         public string Id { get; set; }
         public string Type { get; set; }
+        public Vector3 Pos { get; set; }
 
         public MonsterCreate(string id = "", string typ = "")
         {
@@ -17,7 +21,19 @@ namespace Interfaz.Models.Monsters
         {
             try
             {
-                return System.Text.Json.JsonSerializer.Serialize(this);
+                JsonSerializerOptions serializeOptions = new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new Vector3Converter()
+                        ,new NullConverter()
+                    },
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    WriteIndented = true,
+                    IgnoreNullValues = true
+                };
+
+                return System.Text.Json.JsonSerializer.Serialize(this, serializeOptions);
             }
             catch (Exception ex)
             {
@@ -31,7 +47,20 @@ namespace Interfaz.Models.Monsters
             try
             {
                 string strJson = UtilityAssistant.CleanJSON(json);
-                MonsterCreate shot = System.Text.Json.JsonSerializer.Deserialize<MonsterCreate>(strJson);
+
+                JsonSerializerOptions serializeOptions = new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new Vector3Converter()
+                        ,new NullConverter()
+                    },
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                    WriteIndented = true,
+                    IgnoreNullValues = true
+                };
+
+                MonsterCreate shot = System.Text.Json.JsonSerializer.Deserialize<MonsterCreate>(strJson, serializeOptions);
                 return shot;
             }
             catch (Exception ex)

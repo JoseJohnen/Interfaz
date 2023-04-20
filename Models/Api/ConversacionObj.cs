@@ -1,5 +1,5 @@
 ﻿using Interfaz.Models.Shots;
-using Interfaz.Utilities;
+using Interfaz.Auxiliary;
 using Newtonsoft.Json;
 using System.Collections.Immutable;
 using System.Text.Json;

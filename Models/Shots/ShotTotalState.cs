@@ -1,4 +1,4 @@
-﻿using Interfaz.Utilities;
+﻿using Interfaz.Auxiliary;
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 

@@ -1,11 +1,8 @@
-﻿using Interfaz.Models.Api;
-using Interfaz.Models.Auxiliary;
+﻿using Interfaz.Models.Auxiliary;
 using Interfaz.Models.Monsters;
 using Interfaz.Models.Shots;
-using Interfaz.Utilities;
-using Newtonsoft.Json;
+using Interfaz.Auxiliary;
 using System.Collections.Concurrent;
-using System.Net.Sockets;
 using System.Numerics;
 using System.Reflection;
 using System.Text.Encodings.Web;
@@ -15,16 +12,18 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Interfaz.Models.Puppets
 {
-    public abstract partial class Puppet
+    public abstract class Puppet
     {
+        private Vector3 position;
+
         public virtual float HP { get; set; }
         public virtual float VelocityModifier { get; set; }
         public virtual float MPKillBox { get; set; }
         public virtual string Name { get; set; }
         public virtual bool IsFlyer { get; set; }
-        public virtual Vector3 Position { get; set; }
+        public virtual Vector3 Position { get => position; set => position = value; }
         //public virtual AnimacionSprite AnimSprite { get; set; }
-        
+
         //Pensandolo bien, estos datos son redundantes en esta versión del Puppet porque los cálculos se hacen a partir del medio, no del puppet en sí
         //y en el peor de los casos son calculables desde "position" por el lado del cliente
         /*public virtual Vector3 Sprite { get; set; }
@@ -63,6 +62,33 @@ namespace Interfaz.Models.Puppets
         {
 
         }
+
+        public static Puppet CreatePuppetFromClassName(string ClassName, Vector3 Pos = new Vector3())
+        {
+            try
+            {
+                Type typ = Puppet.TypesOfMonsters().Where(c => c.Name == ClassName).FirstOrDefault();
+                if (typ == null)
+                {
+                    typ = Puppet.TypesOfMonsters().Where(c => c.FullName == ClassName).FirstOrDefault();
+                }
+
+                object obtOfType = Activator.CreateInstance(typ); //Requires parameterless constructor.
+                                                                  //TODO: System to determine the type of enemy to make the object, prepare stats and then add it to the list
+
+                Puppet prgObj = ((Puppet)obtOfType);
+                if(Pos != new Vector3())
+                {
+                    prgObj.position = Pos;
+                }
+                return prgObj;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: (Puppet)  CreatePuppetFromClassName(string, Vector3): "+ ex.Message);
+                return default;
+            }
+        }
         #endregion
 
         #region Auxiliares
@@ -93,7 +119,7 @@ namespace Interfaz.Models.Puppets
             string txt = Text;
             try
             {
-                txt = Interfaz.Utilities.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
+                txt = Interfaz.Auxiliary.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
 
                 JsonSerializerOptions serializeOptions = new JsonSerializerOptions
                 {
@@ -127,7 +153,7 @@ namespace Interfaz.Models.Puppets
             try
             {
                 string clase = UtilityAssistant.CleanJSON(json);
-                clase = UtilityAssistant.ExtractAIInstructionData(clase, "Class").Replace("\"","");
+                clase = UtilityAssistant.ExtractAIInstructionData(clase, "Class").Replace("\"", "");
 
                 Type typ = Puppet.TypesOfMonsters().Where(c => c.Name == clase).FirstOrDefault();
                 if (typ == null)
@@ -253,7 +279,7 @@ namespace Interfaz.Models.Puppets
                     mod.Z -= 1.5f;
                 }
 
-                if(this.DetectEntityInRange(target, 1.5f))
+                if (this.DetectEntityInRange(target, 1.5f))
                 {
                     //TODO: Transfer damage
                 }

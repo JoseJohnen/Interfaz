@@ -1,13 +1,15 @@
 ﻿using Interfaz.Models.Area;
 using Interfaz.Models.Puppets;
 using Interfaz.Models.Tiles;
-using Interfaz.Utilities;
+using Interfaz.Auxiliary;
 using System.Collections.Concurrent;
 using System.Numerics;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Interfaz.Models.Auxiliary;
+using Interfaz.Models.Comms;
 
 namespace Interfaz.Models.Worlds
 {
@@ -17,43 +19,66 @@ namespace Interfaz.Models.Worlds
         public float WestEast;
         public float Height;
         public string Name;
-        //public Tile_Primus[,,] worldTiles;
-        public ConcurrentDictionary<string, Tile> dic_worldTiles = new ConcurrentDictionary<string, Tile>();
-        public Dictionary<Puppet,int> dic_SpawnList = new Dictionary<Puppet, int>(); 
-        public System.Numerics.Vector3 Location { get; set; } = new System.Numerics.Vector3(0, 0, 0);
 
+        public ConcurrentDictionary<string, Tile> dic_worldTiles = new ConcurrentDictionary<string, Tile>();
+        public Dictionary<Puppet, int> dic_SpawnList = new Dictionary<Puppet, int>();
+        public List<GameSocketClient> l_players = new List<GameSocketClient>();
+        public List<AreaDefiner> L_centros = new List<AreaDefiner>();
+
+        public virtual System.Numerics.Vector3 Location {
+            get
+            {
+                return location;
+            }
+            set 
+            {
+                location = value;
+                Area.L_AreaDefiners.Where(c => c.NombreArea == "NW").First().Point.Item2 = new SerializedVector3(location + new Vector3(-0.8f / 2, 0.8f / 2, 0));
+                Area.L_AreaDefiners.Where(c => c.NombreArea == "NE").First().Point.Item2 = new SerializedVector3(location + new Vector3(0.8f / 2, 0.8f / 2, 0));
+                Area.L_AreaDefiners.Where(c => c.NombreArea == "SW").First().Point.Item2 = new SerializedVector3(location + new Vector3(-0.8f / 2, -0.8f / 2, 0));
+                Area.L_AreaDefiners.Where(c => c.NombreArea == "SE").First().Point.Item2 = new SerializedVector3(location + new Vector3(0.8f / 2, -0.8f / 2, 0));
+            }
+        }
+        private Vector3 location = new System.Numerics.Vector3(0, 0, 0);
 
         public Interfaz.Models.Area.Area Area = new Interfaz.Models.Area.Area(new List<AreaDefiner>() {
-            new AreaDefiner(),
-            new AreaDefiner(),
-            new AreaDefiner(),
-            new AreaDefiner(),
+            new AreaDefiner(new Pares<string, SerializedVector3>("NW"), "NW"),
+            new AreaDefiner(new Pares<string, SerializedVector3>("NE"), "NE"),
+            new AreaDefiner(new Pares<string, SerializedVector3>("SW"), "SW"),
+            new AreaDefiner(new Pares<string, SerializedVector3>("SE"), "SE"),
         });
 
-        //public List<Tile_Primus> l_FloorTiles = new List<Tile_Primus>();
-        
         public World(int westEast = 3, int height = 1, int frontBack = 3, string name = "")
         {
             WestEast = westEast;
             Height = height;
             FrontBack = frontBack;
             Name = name;
+            Area = new Interfaz.Models.Area.Area(new List<AreaDefiner>() {
+                new AreaDefiner(new Pares<string,SerializedVector3>("NW"), "NW"),
+                new AreaDefiner(new Pares<string, SerializedVector3>("NE"), "NE"),
+                new AreaDefiner(new Pares<string, SerializedVector3>("SW"), "SW"),
+                new AreaDefiner(new Pares<string, SerializedVector3>("SE"), "SE"),
+            });
         }
 
         public virtual bool IsInsideAreaWorld(Vector3 position)
         {
             try
             {
-                AreaDefiner NW = this.Area.Where(c => c.Point.Item1 == "NW").First();
-                AreaDefiner NE = this.Area.Where(c => c.Point.Item1 == "NE").First();
-                AreaDefiner SW = this.Area.Where(c => c.Point.Item1 == "SW").First();
-                AreaDefiner SE = this.Area.Where(c => c.Point.Item1 == "SE").First();
-
-                if((NW.Point.Item2.Z <= position.Z) && (SE.Point.Item2.Z >= position.Z))
+                if (this.Area.Count > 0)
                 {
-                    if((NW.Point.Item2.X <= position.X) && (SE.Point.Item2.X >= position.X))
+                    AreaDefiner NW = this.Area.Where(c => c.Point.Item1 == "NW").First();
+                    AreaDefiner NE = this.Area.Where(c => c.Point.Item1 == "NE").First();
+                    AreaDefiner SW = this.Area.Where(c => c.Point.Item1 == "SW").First();
+                    AreaDefiner SE = this.Area.Where(c => c.Point.Item1 == "SE").First();
+
+                    if ((NW.Point.Item2.Z <= position.Z) && (SE.Point.Item2.Z >= position.Z))
                     {
-                        return true;
+                        if ((NW.Point.Item2.X <= position.X) && (SE.Point.Item2.X >= position.X))
+                        {
+                            return true;
+                        }
                     }
                 }
                 return false;
@@ -65,23 +90,51 @@ namespace Interfaz.Models.Worlds
             }
         }
 
+        public virtual bool IsInsideRadiusWorld(Vector3 position, double distance = 15)
+        {
+            try
+            {
+                Vector3 rtVect3 = Vector3.Zero;
+                foreach (AreaDefiner item  in L_centros)
+                {
+                    rtVect3 = UtilityAssistant.DistanceComparitorVector3(item.Point.Item2.ConvertToVector3(),position,(Single)distance);
+                    //Si al menos uno de ellos esta en rango, es verdad
+                    if (
+                        rtVect3.X < distance / 2 &&
+                        rtVect3.Y < distance / 2 &&
+                        rtVect3.Z < distance / 2
+                    )
+                    {
+                        return true;
+                    }
+                }
+                //Si ninguno de ellos lo esta, es falso
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error bool IsInsideAreaWorld(Vector3): " + ex.Message);
+                return false;
+            }
+        }
+
         public virtual World RegisterWorld(string nameOfTheWorld = "")
         {
-        //    try
-        //    {
-        //        string name = "World_" + WorldController.dic_worlds.Count;
-        //        if (nameOfTheWorld != "")
-        //        {
-        //            name = nameOfTheWorld;
-        //        }
-        //        WorldController.dic_worlds.TryAdd(name, this);
-                return this;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine("Error RegisterWorld(string): " + ex.Message);
-        //        return null;
-        //    }
+            //    try
+            //    {
+            //        string name = "World_" + WorldController.dic_worlds.Count;
+            //        if (nameOfTheWorld != "")
+            //        {
+            //            name = nameOfTheWorld;
+            //        }
+            //        WorldController.dic_worlds.TryAdd(name, this);
+            return this;
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Console.WriteLine("Error RegisterWorld(string): " + ex.Message);
+            //        return null;
+            //    }
         }
 
         public virtual World FillWorld(string TileClass = "")
@@ -125,6 +178,49 @@ namespace Interfaz.Models.Worlds
             }
         }
 
+        public virtual bool EncontrarCentro()
+        {
+            try
+            {
+                if(dic_worldTiles.Count == 0)
+                {
+                    return false;
+                }
+
+                Tile primerTileComoEjemplo = dic_worldTiles.Values.FirstOrDefault();
+                Vector2 nwVct2 = primerTileComoEjemplo.spriteSize;
+                float profCentro = MathF.Floor(nwVct2.Y * this.FrontBack)/2;
+                float largCentro = MathF.Floor(nwVct2.X * this.WestEast)/2;
+
+                //Determinar si los valores son pares o impares para poner modificación acorde
+                if(WestEast % 2 != 0)
+                {
+                    profCentro += 1;//(profundidadDelTile / 2);
+                }
+
+                if (FrontBack % 2 != 0)
+                {
+                    largCentro += 1;//(largoDelTile / 2);
+                }
+
+                L_centros.Add(new AreaDefiner()
+                {
+                    NombreArea = "centro_1",
+                    Point = new Pares<string, SerializedVector3>()
+                    {
+                        Item1 = "centro",
+                        Item2 = new SerializedVector3(new Vector3(largCentro,primerTileComoEjemplo.Position.Y,profCentro)),
+                    }
+                });
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error (World) bool EncontrarCentro(): " + ex.Message);
+                return false;
+            }
+        }
+
         public static List<Type> TypesOfWorlds()
         {
             List<Type> myTypes = Assembly.GetExecutingAssembly().GetTypes().Where(type => type.IsSubclassOf(typeof(World)) && !type.IsAbstract).ToList();
@@ -161,7 +257,7 @@ namespace Interfaz.Models.Worlds
             string txt = json;
             try
             {
-                txt = Interfaz.Utilities.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
+                txt = Interfaz.Auxiliary.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
 
                 //json = UtilityAssistant.CleanJSON(json);
 
@@ -222,290 +318,6 @@ namespace Interfaz.Models.Worlds
             }
         }
         #endregion
-
-        #region Constructores y métodos de creación de mundos
-        //public static World CreateWorld(int westEast = 20, int height = 2, int frontBack = 20)
-        //{
-        //    World world = new World(westEast, height, frontBack);
-        //    world.FrontBack = frontBack;
-        //    world.WestEast = westEast;
-        //    world.Height = height;
-        //    int x = 0, y = 0, z = 0;
-        //    do
-        //    {
-        //        //world.worldTiles[x, y, z].Entity.Transform.parent = world.Instance.Transform;
-        //        if (x == world.WestEast - 1)
-        //        {
-        //            x = 0;
-        //            y++;
-
-        //            if (y == world.Height)
-        //            {
-        //                y = 0;
-        //                z++;
-
-        //                if (z == world.FrontBack)
-        //                {
-        //                    break;
-        //                }
-        //            }
-        //        }
-        //        else if (x < world.WestEast)
-        //        {
-        //            x++;
-        //        }
-        //    }
-        //    while (x <= world.WestEast - 1 && y <= world.Height - 1 && z <= world.FrontBack - 1);
-        //    return world;
-        //}
-
-        /*public World(Prefab prefab, int westEast = 20, int height = 1, int frontBack = 20)
-        {
-            try
-            {
-                this.Prefab = prefab;
-                this.FrontBack = frontBack;
-                this.WestEast = westEast;
-                this.Height = height;
-
-                this.Instance = new Entity("World_" + WorldController.dic_worlds.Count());
-                this.Instance.Transform.Parent = WorldController.Instance.Entity.Transform;
-
-                worldTiles = new Entity[WestEast + 1, Height + 1, FrontBack + 1];
-                float xScale = prefab.Transform.lossyScale.X;
-                float yScale = prefab.Transform.lossyScale.Y;
-                float zScale = prefab.Transform.lossyScale.Z;
-                int x = 0, y = 0, z = 0;
-                do
-                {
-                    var a = prefab.Instantiate();
-                    Entity.Scene.Entities.AddRange(a);
-                    Entity EntityReference = a[0];
-
-                    if (x == 0 && y == 0 && z == 0)
-                    {
-                        xScale = 0;
-                        yScale = 0;
-                        zScale = 0;
-                    }
-
-                    worldTiles[x, y, z] = new Entity(EntityReference.Name + "_" + x + "_" + y + "_" + z);
-                    //worldTiles[x, y, z].Transform.parent = this.Entity.Transform;
-                    worldTiles[x, y, z].Transform.Position = new Vector3(x + xScale, y + yScale, z + zScale); //Modificador X Tamaño
-
-                   
-                    EntityReference.Transform.Position = worldTiles[x, y, z].Transform.Position;
-                    EntityReference.Transform.Parent = worldTiles[x, y, z].Transform;
-                    worldTiles[x, y, z].Transform.Parent = this.Instance.Transform;
-                    if (x == WestEast - 1)
-                    {
-                        x = 0;
-                        y++;
-
-                        if (y == Height)
-                        {
-                            y = 0;
-                            z++;
-
-                            if (z == FrontBack)
-                            {
-                                break;
-                            }
-                        }
-                    }
-                    else if (x < WestEast)
-                    {
-                        x++;
-                    }
-                }
-                while (x <= WestEast - 1 && y <= Height - 1 && z <= FrontBack - 1);
-            }
-            catch (Exception ex)
-            {
-                //Debug.Log("World() (Builder) Error: " + ex.ToString());
-            }
-            ////Debug.Log("World Created with " + (FrontBack * WestEast * Height) + " tiles (Entitys).");
-        }
-        #endregion
-
-        #region Regiones Suplementarias Creacion de Mundo
-        public bool AddToFloorTiles(Entity go)
-        {
-            if (!l_FloorTiles.Any(r => r.Name == go.Name))
-            {
-                l_FloorTiles.Add(go);
-                return true;
-            }
-            return false;
-        }
-
-        public bool CheckFloorTiles(Entity go)
-        {
-            if (!l_FloorTiles.Any(r => r.Name == go.Name))
-            {
-                return true;
-            }
-            return false;
-        }
-
-        public Entity NameToTile(string name)
-        {
-            try
-            {
-                string strTile = name;
-                strTile = strTile.Substring(strTile.IndexOf('_') + 1);
-                string sX = strTile.Substring(0, strTile.IndexOf('_'));
-
-                strTile = strTile.Substring(strTile.IndexOf('_') + 1);
-                string sY = strTile.Substring(0, strTile.IndexOf('_'));
-
-                string sZ = strTile.Substring(strTile.IndexOf('_') + 1);
-
-                int X = Convert.ToInt32(sX);
-                int Y = Convert.ToInt32(sY);
-                int Z = Convert.ToInt32(sZ);
-
-                return this.worldTiles[X, Y, Z];
-            }
-            catch (Exception ex)
-            {
-                //Debug.Log("Tile_Primus NameToTile(string name) ERROR: " + ex.ToString());
-                return null;
-            }
-        }
-
-        public bool Load()
-        {
-            string wrld = File.ReadAllText(Application.dataPath + "/savedWorldExample.sav");
-            int x = 0;
-            int y = 0;
-            int z = 0;
-            int i = 0;
-            float xScale = this.Prefab.Transform.lossyScale.X;
-            float yScale = this.Prefab.Transform.lossyScale.Y;
-            float zScale = this.Prefab.Transform.lossyScale.Z;
-            this.FrontBack = Convert.ToInt32(wrld.ObtainValueFromString("FrontBack"));
-            this.WestEast = Convert.ToInt32(wrld.ObtainValueFromString("WestEast"));
-            this.Height = Convert.ToInt32(wrld.ObtainValueFromString("Height"));
-            string[] arrTiles = wrld.ObtainValueFromString("worldTiles").Split(',');
-            do
-            {
-                this.worldTiles[x, y, z] = null;
-                if (arrTiles[i] != " 0 ")
-                {
-                    this.worldTiles[x, y, z] = new Entity(this.Prefab.Name + "_" + x + "_" + y + "_" + z);
-                    this.worldTiles[x, y, z].Transform.Position = new Vector3(x + xScale, y + yScale, z + zScale); //Modificador X Tamaño
-
-                    Entity EntityReference = Instantiate(this.Prefab) as Entity;
-                    EntityReference.Transform.Position = worldTiles[x, y, z].Transform.Position;
-                    EntityReference.Transform.parent = worldTiles[x, y, z].Transform;
-                    this.worldTiles[x, y, z].Entity.Transform.parent = WorldController.Instance.Transform;
-                }
-                if (x == this.WestEast - 1)
-                {
-                    x = 0;
-                    y++;
-
-                    if (y == this.Height)
-                    {
-                        y = 0;
-                        z++;
-
-                        if (z == this.FrontBack)
-                        {
-                            break;
-                        }
-                    }
-                }
-                else if (x < this.WestEast)
-                {
-                    x++;
-                }
-                i++;
-            }
-            while (x <= this.WestEast - 1 && y <= this.Height - 1 && z <= this.FrontBack - 1);
-            return true;
-        }
-
-        public bool Save()
-        {
-            string wrld = "{ \"FrontBack\":" + FrontBack + ", \"WestEast\":" + WestEast + ", \"Height\":" + Height + ", \"worldTiles\":[";
-            int x = 0;
-            int y = 0;
-            int z = 0;
-            string tmpString = string.Empty;
-            do
-            {
-                tmpString += this.worldTiles[x, y, z] != null ? 1 : 0;
-                tmpString += " , ";
-                if (x == this.WestEast - 1)
-                {
-                    x = 0;
-                    y++;
-
-                    if (y == this.Height)
-                    {
-                        y = 0;
-                        z++;
-
-                        if (z == this.FrontBack)
-                        {
-                            break;
-                        }
-                    }
-                }
-                else if (x < this.WestEast)
-                {
-                    x++;
-                }
-            }
-            while (x <= this.WestEast - 1 && y <= this.Height - 1 && z <= this.FrontBack - 1);
-            wrld += ExtensionMethods.ReplaceLastOccurrence(tmpString, ", ", "") + "]}";
-            //Debug.Log(wrld);
-            File.WriteAllText((Application.dataPath + "/savedWorldExample.sav"), wrld);
-            //Debug.Log(Application.dataPath);
-            return true;
-        }
-
-        public void Empty()
-        {
-            int x = 0;
-            int y = 0;
-            int z = 0;
-            do
-            {
-                Destroy(this.worldTiles[x, y, z].Entity);
-                this.worldTiles[x, y, z] = null;
-                if (x == this.WestEast - 1)
-                {
-                    x = 0;
-                    y++;
-
-                    if (y == this.Height)
-                    {
-                        y = 0;
-                        z++;
-
-                        if (z == this.FrontBack)
-                        {
-                            break;
-                        }
-                    }
-                }
-                else if (x < this.WestEast)
-                {
-                    x++;
-                }
-            }
-            while (x <= this.WestEast - 1 && y <= this.Height - 1 && z <= this.FrontBack - 1);
-        }
-
-        public override void Update()
-        {
-        }*/
-
-        #endregion
-
     }
 
     public class WorldConverter : System.Text.Json.Serialization.JsonConverter<World>
@@ -550,7 +362,7 @@ namespace Interfaz.Models.Worlds
 
                 strValue = UtilityAssistant.ExtractValue(tempString, "Area");
                 wrldObj.Area = Area.Area.CreateFromJson(strValue);
-                
+
 
                 /*if (string.IsNullOrWhiteSpace(readerReceiver) || readerReceiver.Equals("\"{\""))
                 {

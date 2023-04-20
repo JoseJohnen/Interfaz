@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Xml.Serialization;
 
-namespace Interfaz.Utilities
+namespace Interfaz.Auxiliary
 {
     [Serializable]
     public class SerializedVector3

@@ -9,7 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Interfaz.Utilities
+namespace Interfaz.Auxiliary
 {
     //TODO: TODO BASICAMENTE; ESTAS CLASES NO ESTAN LISTAS
     public class Vector3Converter : System.Text.Json.Serialization.JsonConverter<Vector3>

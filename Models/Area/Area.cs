@@ -1,5 +1,5 @@
 ﻿using Interfaz.Models.Auxiliary;
-using Interfaz.Utilities;
+using Interfaz.Auxiliary;
 using System.Drawing;
 using System.Numerics;
 
@@ -681,7 +681,7 @@ namespace Interfaz.Models.Area
             string txt = json;
             try
             {
-                txt = Interfaz.Utilities.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
+                txt = Interfaz.Auxiliary.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
                 string[] strJsonArray = new string[1];
                 string[] strStrArr = new string[1];
 

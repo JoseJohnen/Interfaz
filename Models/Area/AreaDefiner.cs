@@ -1,6 +1,6 @@
 ﻿using Interfaz.Models.Auxiliary;
 using Interfaz.Models.Worlds;
-using Interfaz.Utilities;
+using Interfaz.Auxiliary;
 using System.Net.Http.Headers;
 using System.Numerics;
 using System.Text.Json;
@@ -167,7 +167,7 @@ namespace Interfaz.Models.Area
             string txt = json;
             try
             {
-                txt = Interfaz.Utilities.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
+                txt = Interfaz.Auxiliary.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
 
                 string nombreArea = UtilityAssistant.ExtractValue(txt, "NombreArea");
                 this.NombreArea = nombreArea;

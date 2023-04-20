@@ -1,4 +1,4 @@
-﻿using Interfaz.Utilities;
+﻿using Interfaz.Auxiliary;
 using System.Text.Json;
 
 namespace Interfaz.Models.Auxiliary

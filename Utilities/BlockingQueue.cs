@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace Interfaz.Utilities
+namespace Interfaz.Auxiliary
 {
     public class BlockingQueue<T> where T : class
     {

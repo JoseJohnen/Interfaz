@@ -1,4 +1,4 @@
-﻿using Interfaz.Utilities;
+﻿using Interfaz.Auxiliary;
 
 namespace Interfaz.Models.Shots
 {

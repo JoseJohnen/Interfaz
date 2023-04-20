@@ -1,6 +1,6 @@
 ﻿using Interfaz.Models.Auxiliary;
 using Interfaz.Models.Puppets;
-using Interfaz.Utilities;
+using Interfaz.Auxiliary;
 using System.Net.Sockets;
 using System.Numerics;
 using System.Text.Encodings.Web;
@@ -88,7 +88,7 @@ namespace Interfaz.Models
                     return String.Empty;
                 }
 
-                string specificRelevantInstruction = Interfaz.Utilities.UtilityAssistant.ValidateAndExtractInstructions(receivedRelevantInformation, "PST", out receivedRelevantInformation);
+                string specificRelevantInstruction = Interfaz.Auxiliary.UtilityAssistant.ValidateAndExtractInstructions(receivedRelevantInformation, "PST", out receivedRelevantInformation);
                 receivedRelevantInformation = receivedRelevantInformation.Replace("PST:", "");
                 if (String.IsNullOrWhiteSpace(specificRelevantInstruction))
                 {
@@ -100,11 +100,11 @@ namespace Interfaz.Models
                 string tempString = string.Empty;
                 plyr = new Player
                 {
-                    Weapon = new Interfaz.Utilities.SerializedVector3(pldt.WP).ConvertToVector3(),
-                    Leftarm = new Interfaz.Utilities.SerializedVector3(pldt.LS).ConvertToVector3(),
-                    Rightarm = new Interfaz.Utilities.SerializedVector3(pldt.RS).ConvertToVector3(),
-                    Position = new Interfaz.Utilities.SerializedVector3(pldt.PS).ConvertToVector3(),
-                    Rotation = Interfaz.Utilities.UtilityAssistant.StringToQuaternion(pldt.RT)
+                    Weapon = new Interfaz.Auxiliary.SerializedVector3(pldt.WP).ConvertToVector3(),
+                    Leftarm = new Interfaz.Auxiliary.SerializedVector3(pldt.LS).ConvertToVector3(),
+                    Rightarm = new Interfaz.Auxiliary.SerializedVector3(pldt.RS).ConvertToVector3(),
+                    Position = new Interfaz.Auxiliary.SerializedVector3(pldt.PS).ConvertToVector3(),
+                    Rotation = Interfaz.Auxiliary.UtilityAssistant.StringToQuaternion(pldt.RT)
                 };
 
                 #region Original SetLoad DataFlow
@@ -227,8 +227,8 @@ namespace Interfaz.Models
 
         public void PlayerRotUpdate(Vector3 eulerRot)
         {
-            Quaternion result = Interfaz.Utilities.UtilityAssistant.ToQuaternion(eulerRot);
-            Rotation = Interfaz.Utilities.UtilityAssistant.MultiplyQuaternions(Rotation, result);
+            Quaternion result = Interfaz.Auxiliary.UtilityAssistant.ToQuaternion(eulerRot);
+            Rotation = Interfaz.Auxiliary.UtilityAssistant.MultiplyQuaternions(Rotation, result);
         }
 
         public static float PrepareRotation(float angle)
@@ -245,10 +245,10 @@ namespace Interfaz.Models
             return (float)Math.Cos(num);
         }
 
-        public Interfaz.Utilities.SerializedVector3 RotatePlayer(Quaternion quaternion)
+        public Interfaz.Auxiliary.SerializedVector3 RotatePlayer(Quaternion quaternion)
         {
-            Interfaz.Utilities.SerializedVector3 pos = new Interfaz.Utilities.SerializedVector3(Position);
-            Interfaz.Utilities.SerializedVector3 result = quaternion * pos;
+            Interfaz.Auxiliary.SerializedVector3 pos = new Interfaz.Auxiliary.SerializedVector3(Position);
+            Interfaz.Auxiliary.SerializedVector3 result = quaternion * pos;
             return result;
         }
 
@@ -281,20 +281,20 @@ namespace Interfaz.Models
             string txt = Text;
             try
             {
-                txt = Interfaz.Utilities.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
+                txt = Interfaz.Auxiliary.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
                 PlayerData plDt = System.Text.Json.JsonSerializer.Deserialize<PlayerData>(txt);
                 Player nwMsg = new Player();
                 if (plDt != null)
                 {
-                    nwMsg.Weapon = new Interfaz.Utilities.SerializedVector3(plDt.WP).ConvertToVector3();
+                    nwMsg.Weapon = new Interfaz.Auxiliary.SerializedVector3(plDt.WP).ConvertToVector3();
                     this.Weapon = nwMsg.Weapon;
-                    nwMsg.Leftarm = new Interfaz.Utilities.SerializedVector3(plDt.LS).ConvertToVector3();
+                    nwMsg.Leftarm = new Interfaz.Auxiliary.SerializedVector3(plDt.LS).ConvertToVector3();
                     this.Leftarm = nwMsg.Leftarm;
-                    nwMsg.Rightarm = new Interfaz.Utilities.SerializedVector3(plDt.RS).ConvertToVector3();
+                    nwMsg.Rightarm = new Interfaz.Auxiliary.SerializedVector3(plDt.RS).ConvertToVector3();
                     this.Rightarm = nwMsg.Rightarm;
-                    nwMsg.Position = new Interfaz.Utilities.SerializedVector3(plDt.PS).ConvertToVector3();
+                    nwMsg.Position = new Interfaz.Auxiliary.SerializedVector3(plDt.PS).ConvertToVector3();
                     this.Position = nwMsg.Position;
-                    nwMsg.Rotation = Interfaz.Utilities.UtilityAssistant.StringToQuaternion(plDt.RT);
+                    nwMsg.Rotation = Interfaz.Auxiliary.UtilityAssistant.StringToQuaternion(plDt.RT);
                     this.Rotation = nwMsg.Rotation;
                 }
                 return nwMsg;

@@ -1,8 +1,9 @@
 ﻿using System.Numerics;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
-namespace Interfaz.Utilities
+namespace Interfaz.Auxiliary
 {
     public class UtilityAssistant
     {
@@ -124,6 +125,98 @@ namespace Interfaz.Utilities
         }
 
         /// <summary>
+        /// Compare floats, usually used in floats of position, to determine what is the directional difference between them, it will return a -1, 0 or 1 depending of the imaginary nature of the answer 
+        /// </summary>
+        /// <param name="ValueA">a flota</param>
+        /// <param name="ValueB">another float to make the comparison with</param>
+        /// <returns>returns 1 if ValueA is bigger or -1 if ValueB is bigger, if they are equal it will return 0</returns>
+        public static float DistanceModifierByAxis(float ValueA, float ValueB)
+        {
+            try
+            {
+                float evaluator = 0;
+                if (Math.Round(ValueA) > Math.Round(ValueB))
+                {
+                    evaluator = 1;
+                }
+                else if (Math.Round(ValueA) < Math.Round(ValueB))
+                {
+                    evaluator = -1;
+                }
+                return evaluator;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error DistanceModifierByAxis(): " + ex.Message);
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Compare floats, usually used in Vectors of position, to determine what is the distance between both numerically, it will return a positive
+        /// </summary>
+        /// <param name="ValueA">a float</param>
+        /// <param name="ValueB">another float to make the comparison with</param>
+        /// <returns>the distance between the two</returns>
+        public static float DistanceComparitorByAxis(float ValueA, float ValueB)
+        {
+            try
+            {
+                float evaluator = 0;
+                if (ValueA > ValueB)
+                {
+                    evaluator = ValueA - ValueB;
+                }
+                else
+                {
+                    evaluator = ValueB - ValueA;
+                }
+                return evaluator;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error DistanceComparitorByAxis(): " + ex.Message);
+                return 0;
+            }
+        }
+
+        public static Vector2 DistanceComparitorVector2(Vector2 position1, Vector2 position2, float DetectionArea = 15)
+        {
+            try
+            {
+                Vector2 reVect = Vector2.Zero;
+                reVect.X = UtilityAssistant.DistanceComparitorByAxis(position1.X, position2.X);
+                reVect.Y = UtilityAssistant.DistanceComparitorByAxis(position1.Y, position2.Y);
+
+                return reVect;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error (Puppet) DetectEntityInRange(Vector3, float): " + ex.Message);
+                return Vector2.Zero;
+            }
+        }
+
+        public static Vector3 DistanceComparitorVector3(Vector3 position1, Vector3 position2, float DetectionArea = 15)
+        {
+            try
+            {
+                Vector3 reVect3 = Vector3.Zero;
+                reVect3.X = UtilityAssistant.DistanceComparitorByAxis(position1.X, position2.X);
+                reVect3.Y = UtilityAssistant.DistanceComparitorByAxis(position1.Y, position2.Y);
+                reVect3.Z = UtilityAssistant.DistanceComparitorByAxis(position1.Z, position2.Z);
+
+                return reVect3;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error (Puppet) DetectEntityInRange(Vector3, float): " + ex.Message);
+                return Vector3.Zero;
+            }
+        }
+
+        #region Quaternion Related
+        /// <summary>
         /// Recibe un string en formato 'X:# Y:# Z:# W:#' y lo convierte en un Quaternion con dichos parámetros, luego retorna dicho Quaternion.
         /// </summary>
         /// <param name="information">String containing the quaternion information in format X:# Y:# Z:# W:#</param>
@@ -185,6 +278,106 @@ namespace Interfaz.Utilities
             }
         }
 
+        public static string QuaternionToXml(Quaternion quaternion)
+        {
+            try
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(Quaternion));
+                XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+                ns.Add(String.Empty, String.Empty);
+                string result = string.Empty;
+                using (StringWriter textWriter = new StringWriter())
+                {
+                    serializer.Serialize(textWriter, quaternion, ns);
+                    return textWriter.ToString();
+                }
+                return string.Empty;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string QuaternionToXml(Quaternion): " + ex.Message);
+                return String.Empty;
+            }
+        }
+
+        public static Vector3 ToEulerAngles(Quaternion q)
+        {
+            try
+            {
+                Vector3 angles = new();
+
+                // roll / x
+                double sinr_cosp = 2 * (q.W * q.X + q.Y * q.Z);
+                double cosr_cosp = 1 - 2 * (q.X * q.X + q.Y * q.Y);
+                angles.X = (float)Math.Atan2(sinr_cosp, cosr_cosp);
+
+                // pitch / y
+                double sinp = 2 * (q.W * q.Y - q.Z * q.X);
+                if (Math.Abs(sinp) >= 1)
+                {
+                    angles.Y = (float)Math.CopySign(Math.PI / 2, sinp);
+                }
+                else
+                {
+                    angles.Y = (float)Math.Asin(sinp);
+                }
+
+                // yaw / z
+                double siny_cosp = 2 * (q.W * q.Z + q.X * q.Y);
+                double cosy_cosp = 1 - 2 * (q.Y * q.Y + q.Z * q.Z);
+                angles.Z = (float)Math.Atan2(siny_cosp, cosy_cosp);
+
+                return angles;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Vector3 ToEulerAngles(Quaternion): " + ex.Message);
+                return Vector3.Zero;
+            }
+        }
+
+        public static Quaternion RotateX(float angle)
+        {
+            //Determina la rotación a partir de un ángulo
+            float num = angle * 0.5f;
+            return new Quaternion((float)Math.Sin(num), 0f, 0f, (float)Math.Cos(num));
+        }
+
+        public static Quaternion RotateY(float angle)
+        {
+            //Determina la rotación a partir de un ángulo
+            float num = angle * 0.5f;
+            return new Quaternion(0f, (float)Math.Sin(num), 0f, (float)Math.Cos(num));
+        }
+
+        public static Quaternion RotateZ(float angle)
+        {
+            //Determina la rotación a partir de un ángulo
+            float num = angle * 0.5f;
+            return new Quaternion(0f, 0f, (float)Math.Sin(num), (float)Math.Cos(num));
+        }
+
+        public static Quaternion MultiplyQuaternions(Quaternion left, Quaternion right)
+        {
+            float lx = left.X;
+            float ly = left.Y;
+            float lz = left.Z;
+            float lw = left.W;
+            float rx = right.X;
+            float ry = right.Y;
+            float rz = right.Z;
+            float rw = right.W;
+
+            Quaternion result = new Quaternion();
+            result.X = (rx * lw + lx * rw + ry * lz) - (rz * ly);
+            result.Y = (ry * lw + ly * rw + rz * lx) - (rx * lz);
+            result.Z = (rz * lw + lz * rw + rx * ly) - (ry * lx);
+            result.W = (rw * lw) - (rx * lx + ry * ly + rz * lz);
+            return result;
+        }
+        #endregion
+
+        #region Extraxt Values
         public static string ExtractValues(string instructions, string particle, out string part1, out string part2)
         {
             try
@@ -352,62 +545,8 @@ namespace Interfaz.Utilities
                 return String.Empty;
             }
         }
+        #endregion
 
-        /// <summary>
-        /// Compare floats, usually used in floats of position, to determine what is the directional difference between them, it will return a -1, 0 or 1 depending of the imaginary nature of the answer 
-        /// </summary>
-        /// <param name="ValueA">a flota</param>
-        /// <param name="ValueB">another float to make the comparison with</param>
-        /// <returns>returns 1 if ValueA is bigger or -1 if ValueB is bigger, if they are equal it will return 0</returns>
-        public static float DistanceModifierByAxis(float ValueA, float ValueB)
-        {
-            try
-            {
-                float evaluator = 0;
-                if (Math.Round(ValueA) > Math.Round(ValueB))
-                {
-                    evaluator = 1;
-                }
-                else if (Math.Round(ValueA) < Math.Round(ValueB))
-                {
-                    evaluator = -1;
-                }
-                return evaluator;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error DistanceModifierByAxis(): " + ex.Message);
-                return 0;
-            }
-        }
-
-        /// <summary>
-        /// Compare floats, usually used in Vectors of position, to determine what is the distance between both numerically, it will return a positive
-        /// </summary>
-        /// <param name="ValueA">a float</param>
-        /// <param name="ValueB">another float to make the comparison with</param>
-        /// <returns>the distance between the two</returns>
-        public static float DistanceComparitorByAxis(float ValueA, float ValueB)
-        {
-            try
-            {
-                float evaluator = 0;
-                if (ValueA > ValueB)
-                {
-                    evaluator = ValueA - ValueB;
-                }
-                else
-                {
-                    evaluator = ValueB - ValueA;
-                }
-                return evaluator;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error DistanceComparitorByAxis(): " + ex.Message);
-                return 0;
-            }
-        }
 
         public static double ConvertRadiansToDegrees(double radians)
         {
@@ -421,72 +560,6 @@ namespace Interfaz.Utilities
         /// <param name="left">The first quaternion to modulate.</param>
         /// <param name="right">The second quaternion to modulate.</param>
         /// <param name="result">When the moethod completes, contains the modulated quaternion.</param>
-        public static Quaternion MultiplyQuaternions(Quaternion left, Quaternion right)
-        {
-            float lx = left.X;
-            float ly = left.Y;
-            float lz = left.Z;
-            float lw = left.W;
-            float rx = right.X;
-            float ry = right.Y;
-            float rz = right.Z;
-            float rw = right.W;
-
-            Quaternion result = new Quaternion();
-            result.X = (rx * lw + lx * rw + ry * lz) - (rz * ly);
-            result.Y = (ry * lw + ly * rw + rz * lx) - (rx * lz);
-            result.Z = (rz * lw + lz * rw + rx * ly) - (ry * lx);
-            result.W = (rw * lw) - (rx * lx + ry * ly + rz * lz);
-            return result;
-        }
-
-        public static Quaternion ToQuaternion(Vector3 v)
-        {
-
-            float cy = (float)Math.Cos(v.Z * 0.5);
-            float sy = (float)Math.Sin(v.Z * 0.5);
-            float cp = (float)Math.Cos(v.Y * 0.5);
-            float sp = (float)Math.Sin(v.Y * 0.5);
-            float cr = (float)Math.Cos(v.X * 0.5);
-            float sr = (float)Math.Sin(v.X * 0.5);
-
-            return new Quaternion
-            {
-                W = (cr * cp * cy + sr * sp * sy),
-                X = (sr * cp * cy - cr * sp * sy),
-                Y = (cr * sp * cy + sr * cp * sy),
-                Z = (cr * cp * sy - sr * sp * cy)
-            };
-
-        }
-
-        public static Vector3 ToEulerAngles(Quaternion q)
-        {
-            Vector3 angles = new();
-
-            // roll / x
-            double sinr_cosp = 2 * (q.W * q.X + q.Y * q.Z);
-            double cosr_cosp = 1 - 2 * (q.X * q.X + q.Y * q.Y);
-            angles.X = (float)Math.Atan2(sinr_cosp, cosr_cosp);
-
-            // pitch / y
-            double sinp = 2 * (q.W * q.Y - q.Z * q.X);
-            if (Math.Abs(sinp) >= 1)
-            {
-                angles.Y = (float)Math.CopySign(Math.PI / 2, sinp);
-            }
-            else
-            {
-                angles.Y = (float)Math.Asin(sinp);
-            }
-
-            // yaw / z
-            double siny_cosp = 2 * (q.W * q.Z + q.X * q.Y);
-            double cosy_cosp = 1 - 2 * (q.Y * q.Y + q.Z * q.Z);
-            angles.Z = (float)Math.Atan2(siny_cosp, cosy_cosp);
-
-            return angles;
-        }
 
         //Cuidado, no funciona con con objetos dentro de objetos TODO: Arreglar eso
         public static string[] CutJson(string jsonToCut)
@@ -594,57 +667,6 @@ namespace Interfaz.Utilities
             }
         }
 
-        public static Quaternion RotateX(float angle)
-        {
-            //Determina la rotación a partir de un ángulo
-            float num = angle * 0.5f;
-            return new Quaternion((float)Math.Sin(num), 0f, 0f, (float)Math.Cos(num));
-        }
-
-        public static Quaternion RotateY(float angle)
-        {
-            //Determina la rotación a partir de un ángulo
-            float num = angle * 0.5f;
-            return new Quaternion(0f, (float)Math.Sin(num), 0f, (float)Math.Cos(num));
-        }
-
-        public static Quaternion RotateZ(float angle)
-        {
-            //Determina la rotación a partir de un ángulo
-            float num = angle * 0.5f;
-            return new Quaternion(0f, 0f, (float)Math.Sin(num), (float)Math.Cos(num));
-        }
-
-        public static Quaternion StringToQuaternion(string information)
-        {
-            try
-            {
-                string sQuaternion = "(" + information.Replace(" ", ",") + ")";
-                // Remove the parentheses
-                if (sQuaternion.StartsWith("(") && sQuaternion.EndsWith(")"))
-                {
-                    sQuaternion = sQuaternion.Substring(1, sQuaternion.Length - 2);
-                }
-
-                // split the items
-                string[] sArray = sQuaternion.Split(',');
-
-                // store as a Vector3
-                Quaternion result = new Quaternion(
-                    float.Parse(sArray[0].Substring(2)),
-                    float.Parse(sArray[1].Substring(2)),
-                    float.Parse(sArray[2].Substring(2)),
-                    float.Parse(sArray[3].Substring(2)));
-
-                return result;
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error Quaternion StringToQuaternion(string): " + ex.Message, ConsoleColor.Red);
-                return Quaternion.Identity;
-            }
-        }
 
         public static string ValidateAndExtractInstructions(string instructions, string signature, out string remainingInstructions)
         {
@@ -963,7 +985,7 @@ namespace Interfaz.Utilities
                 {
                     while (a.Contains("==") || (a.LastIndexOf("=") == (a.Length - 1)))
                     {
-                        a = Utilities.UtilityAssistant.Base64Decode(a);
+                        a = Auxiliary.UtilityAssistant.Base64Decode(a);
                     }
                 }
 
@@ -1003,7 +1025,7 @@ namespace Interfaz.Utilities
                 {
                     while (result.Contains("==") || (result.LastIndexOf("=") == (result.Length - 1)))
                     {
-                        result = Utilities.UtilityAssistant.Base64Decode(result);
+                        result = Auxiliary.UtilityAssistant.Base64Decode(result);
                     }
                 }
 
@@ -1075,6 +1097,22 @@ namespace Interfaz.Utilities
                 return Source;
 
             return Source.Remove(place, Find.Length).Insert(place, Replace);
+        }
+
+        public static bool IsJson(this string source)
+        {
+            if (source == null)
+                return false;
+
+            try
+            {
+                JsonDocument.Parse(source);
+                return true;
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
         }
 
         /*public static string ToJson(this Vector3 vector3)
