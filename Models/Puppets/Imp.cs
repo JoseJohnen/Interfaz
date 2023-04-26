@@ -1,7 +1,7 @@
 ﻿using Interfaz.Models.Auxiliary;
 using Interfaz.Models.Monsters;
-using Interfaz.Auxiliary;
 using System.Numerics;
+using Interfaz.Utilities;
 
 namespace Interfaz.Models.Puppets
 {

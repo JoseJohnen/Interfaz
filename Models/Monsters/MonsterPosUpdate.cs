@@ -1,5 +1,5 @@
-﻿using Interfaz.Auxiliary;
-using Newtonsoft.Json;
+﻿using Interfaz.Utilities;
+//using Newtonsoft.Json;
 using System.Numerics;
 using System.Text.Json;
 
@@ -158,7 +158,7 @@ namespace Interfaz.Models.Monsters
         }
     }
 
-    public class MonsterPosUpdateConverterJSON : JsonConverter<MonsterPosUpdate>
+    /*public class MonsterPosUpdateConverterJSON : JsonConverter<MonsterPosUpdate>
     {
         public override void WriteJson(JsonWriter writer, MonsterPosUpdate shot, Newtonsoft.Json.JsonSerializer serializer)
         {
@@ -204,5 +204,5 @@ namespace Interfaz.Models.Monsters
                 return default;
             }
         }
-    }
+    }*/
 }

@@ -1,7 +1,6 @@
 ﻿using Interfaz.Models.Auxiliary;
 using Interfaz.Models.Monsters;
 using Interfaz.Models.Shots;
-using Interfaz.Auxiliary;
 using System.Collections.Concurrent;
 using System.Numerics;
 using System.Reflection;
@@ -9,6 +8,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using Interfaz.Utilities;
 
 namespace Interfaz.Models.Puppets
 {
@@ -119,7 +119,7 @@ namespace Interfaz.Models.Puppets
             string txt = Text;
             try
             {
-                txt = Interfaz.Auxiliary.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
+                txt = UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
 
                 JsonSerializerOptions serializeOptions = new JsonSerializerOptions
                 {

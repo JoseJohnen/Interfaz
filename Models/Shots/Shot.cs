@@ -3,8 +3,8 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using Interfaz.Auxiliary;
-using Newtonsoft.Json;
+using Interfaz.Utilities;
+//using Newtonsoft.Json;
 
 namespace Interfaz.Models.Shots
 {
@@ -237,7 +237,7 @@ namespace Interfaz.Models.Shots
         }
     }
 
-    public class ShotConverterJSON : Newtonsoft.Json.JsonConverter<Shot>
+    /*public class ShotConverterJSON : Newtonsoft.Json.JsonConverter<Shot>
     {
         public override void WriteJson(JsonWriter writer, Shot shot, Newtonsoft.Json.JsonSerializer serializer)
         {
@@ -296,4 +296,5 @@ namespace Interfaz.Models.Shots
             }
         }
     }
+    */
 }

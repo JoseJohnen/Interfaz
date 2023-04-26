@@ -1,7 +1,6 @@
 ﻿using Interfaz.Models.Area;
 using Interfaz.Models.Puppets;
 using Interfaz.Models.Tiles;
-using Interfaz.Auxiliary;
 using System.Collections.Concurrent;
 using System.Numerics;
 using System.Reflection;
@@ -10,6 +9,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Interfaz.Models.Auxiliary;
 using Interfaz.Models.Comms;
+using Interfaz.Utilities;
 
 namespace Interfaz.Models.Worlds
 {
@@ -257,7 +257,7 @@ namespace Interfaz.Models.Worlds
             string txt = json;
             try
             {
-                txt = Interfaz.Auxiliary.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
+                txt = UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
 
                 //json = UtilityAssistant.CleanJSON(json);
 

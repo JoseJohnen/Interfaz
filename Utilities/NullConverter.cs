@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Interfaz.Auxiliary
+namespace Interfaz.Utilities
 {
     public class NullConverter : JsonConverter<string>
     {

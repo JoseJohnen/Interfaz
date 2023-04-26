@@ -1,4 +1,4 @@
-﻿using Interfaz.Auxiliary;
+﻿using Interfaz.Utilities;
 
 namespace Interfaz.Models.Monsters
 {

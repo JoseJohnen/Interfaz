@@ -1,10 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "9KL0x30KO0ur3rpBbvRcHgD7EQAjuW+dix77v/CWy5SUPod2Aapz9+xHx7bqxo4nEcdaZlicluR7PlMSKe83ZQ==",
+  "dgSpecHash": "fjMFVpiqY4Jpj9CMv6fgBPJJ1NnaM5y2/qFcwBB22fFqHor2UxpoMCDCGGvMWtNp1XAppP5V/Seivs8BK9OJIQ==",
   "success": true,
   "projectFilePath": "E:\\Cod_Pers\\Visual_Studio\\Interfaz\\Interfaz.csproj",
-  "expectedPackageFiles": [
-    "C:\\Users\\Jose Johnen\\.nuget\\packages\\newtonsoft.json\\13.0.2\\newtonsoft.json.13.0.2.nupkg.sha512"
-  ],
+  "expectedPackageFiles": [],
   "logs": []
 }

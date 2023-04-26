@@ -1,7 +1,7 @@
 ﻿using Interfaz.Models.Auxiliary;
-using Interfaz.Auxiliary;
 using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
+using Interfaz.Utilities;
 
 namespace Interfaz.Models.Comms
 {

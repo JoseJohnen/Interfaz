@@ -1,13 +1,13 @@
 ﻿using Interfaz.Models.Area;
 using Interfaz.Models.Auxiliary;
-using Interfaz.Auxiliary;
 using System.Numerics;
 using System.Reflection;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Interfaz.Utilities;
 
-namespace Interfaz.Models
+namespace Interfaz.Models.Tiles
 {
     public abstract class Tile
     {
@@ -19,9 +19,9 @@ namespace Interfaz.Models
         public virtual Vector3 Position { get => position; set => position = value; }
         public virtual Vector3 InWorldPos { get => inWorldPos; set => inWorldPos = value; }
         public virtual Vector2 spriteSize { get; set; }
-        public virtual Interfaz.Models.Area.Area Area { get => area; set => area = value; } 
+        public virtual Area.Area Area { get => area; set => area = value; }
 
-        private Interfaz.Models.Area.Area area = new Interfaz.Models.Area.Area(new List<AreaDefiner>() {
+        private Area.Area area = new Area.Area(new List<AreaDefiner>() {
             new AreaDefiner(),
             new AreaDefiner(),
             new AreaDefiner(),
@@ -63,7 +63,7 @@ namespace Interfaz.Models
             string txt = Text;
             try
             {
-                txt = Interfaz.Auxiliary.UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
+                txt = UtilityAssistant.CleanJSON(txt.Replace("\u002B", "+"));
 
                 JsonSerializerOptions serializeOptions = new JsonSerializerOptions
                 {
@@ -80,9 +80,9 @@ namespace Interfaz.Models
 
                 if (strResult != null)
                 {
-                    this.Name = strResult.Name;
-                    this.Position = strResult.Position;
-                    this.InWorldPos = strResult.InWorldPos;
+                    Name = strResult.Name;
+                    Position = strResult.Position;
+                    InWorldPos = strResult.InWorldPos;
                 }
                 return strResult;
             }
@@ -100,16 +100,16 @@ namespace Interfaz.Models
                 string clase = UtilityAssistant.CleanJSON(json);
                 clase = UtilityAssistant.ExtractAIInstructionData(clase, "Class").Replace("\"", "");
 
-                Type typ = Tile.TypesOfTiles().Where(c => c.Name == clase).FirstOrDefault();
+                Type typ = TypesOfTiles().Where(c => c.Name == clase).FirstOrDefault();
                 if (typ == null)
                 {
-                    typ = Tile.TypesOfTiles().Where(c => c.FullName == clase).FirstOrDefault();
+                    typ = TypesOfTiles().Where(c => c.FullName == clase).FirstOrDefault();
                 }
 
                 object obtOfType = Activator.CreateInstance(typ); //Requires parameterless constructor.
                                                                   //TODO: System to determine the type of enemy to make the object, prepare stats and then add it to the list
 
-                Tile prgObj = ((Tile)obtOfType);
+                Tile prgObj = (Tile)obtOfType;
                 return prgObj.FromJson(json);
             }
             catch (Exception ex)
@@ -125,54 +125,54 @@ namespace Interfaz.Models
             return myTypes;
         }
 
-        public virtual void InstanceTile(string name = "", Vector3 position = default(Vector3), Vector3 inworldpos = default(Vector3))
+        public virtual void InstanceTile(string name = "", Vector3 position = default, Vector3 inworldpos = default)
         {
             try
             {
                 Vector3 Pos = Vector3.Zero;
-                if (position != default(Vector3))
+                if (position != default)
                 {
                     Pos = position;
                 }
 
-                if (inworldpos != default(Vector3))
+                if (inworldpos != default)
                 {
                     InWorldPos = inworldpos;
                 }
 
                 if (!string.IsNullOrEmpty(name))
                 {
-                    this.Name = name;
+                    Name = name;
                 }
 
-                    this.Position = Pos;
+                Position = Pos;
 
-                    // Get the size of the sprite
-                    spriteSize = new Vector2(0.8f, 0.8f);
+                // Get the size of the sprite
+                spriteSize = new Vector2(0.8f, 0.8f);
 
-                    // Calculate the corners of the sprite
-                    Vector3 topLeft = this.position + new Vector3(-spriteSize.X / 2, spriteSize.Y / 2, 0);
-                    Vector3 topRight = this.position + new Vector3(spriteSize.X / 2, spriteSize.Y / 2, 0);
-                    Vector3 bottomLeft = this.position + new Vector3(-spriteSize.X / 2, -spriteSize.Y / 2, 0);
-                    Vector3 bottomRight = this.position + new Vector3(spriteSize.X / 2, -spriteSize.Y / 2, 0);
-                    this.Area.L_AreaDefiners[0].Point = new Pares<string, SerializedVector3>() { Item1 = "NW", Item2 = new SerializedVector3(topLeft) };
-                    this.Area.L_AreaDefiners[1].Point = new Pares<string, SerializedVector3>() { Item1 = "NE", Item2 = new SerializedVector3(topRight) };
-                    this.Area.L_AreaDefiners[2].Point = new Pares<string, SerializedVector3>() { Item1 = "SW", Item2 = new SerializedVector3(bottomLeft) };
-                    this.Area.L_AreaDefiners[3].Point = new Pares<string, SerializedVector3>() { Item1 = "SE", Item2 = new SerializedVector3(bottomRight) };
+                // Calculate the corners of the sprite
+                Vector3 topLeft = this.position + new Vector3(-spriteSize.X / 2, spriteSize.Y / 2, 0);
+                Vector3 topRight = this.position + new Vector3(spriteSize.X / 2, spriteSize.Y / 2, 0);
+                Vector3 bottomLeft = this.position + new Vector3(-spriteSize.X / 2, -spriteSize.Y / 2, 0);
+                Vector3 bottomRight = this.position + new Vector3(spriteSize.X / 2, -spriteSize.Y / 2, 0);
+                Area.L_AreaDefiners[0].Point = new Pares<string, SerializedVector3>() { Item1 = "NW", Item2 = new SerializedVector3(topLeft) };
+                Area.L_AreaDefiners[1].Point = new Pares<string, SerializedVector3>() { Item1 = "NE", Item2 = new SerializedVector3(topRight) };
+                Area.L_AreaDefiners[2].Point = new Pares<string, SerializedVector3>() { Item1 = "SW", Item2 = new SerializedVector3(bottomLeft) };
+                Area.L_AreaDefiners[3].Point = new Pares<string, SerializedVector3>() { Item1 = "SE", Item2 = new SerializedVector3(bottomRight) };
 
-                    //SceneInstance sceneInstance = WorldController.game.SceneSystem.SceneInstance;
-                    //this.entity = sceneInstance.RootScene.Entities.Where(c => c.Name == base.Name).FirstOrDefault();
+                //SceneInstance sceneInstance = WorldController.game.SceneSystem.SceneInstance;
+                //this.entity = sceneInstance.RootScene.Entities.Where(c => c.Name == base.Name).FirstOrDefault();
 
-                    //Correct system rotation
-                    //Entity.Transform.Rotation *= Quaternion.RotationX(Convert.ToSingle(MMO_Client.Code.Assistants.UtilityAssistant.ConvertDegreesToRadiants(90)));
+                //Correct system rotation
+                //Entity.Transform.Rotation *= Quaternion.RotationX(Convert.ToSingle(MMO_Client.Code.Assistants.UtilityAssistant.ConvertDegreesToRadiants(90)));
 
-                    //More precise rotation
-                    //entity.Transform.Rotation *= MMO_Client.Code.Assistants.UtilityAssistant.ConvertSystemNumericsToStrideQuaternion(System.Numerics.Quaternion.CreateFromAxisAngle(Vector3.UnitX, MathF.PI / 2));
+                //More precise rotation
+                //entity.Transform.Rotation *= MMO_Client.Code.Assistants.UtilityAssistant.ConvertSystemNumericsToStrideQuaternion(System.Numerics.Quaternion.CreateFromAxisAngle(Vector3.UnitX, MathF.PI / 2));
 
-                    //Entity.Transform.Position = Code.Assistants.UtilityAssistant.ConvertVector3NumericToStride(Pos);
-                    return;
-                
-                Console.WriteLine("Error (MMO_Client.Models.TilesModels.Tile) InstanceTile: SPRITE NO ENCONTRADO PARA CLASE " + this.GetType().FullName);
+                //Entity.Transform.Position = Code.Assistants.UtilityAssistant.ConvertVector3NumericToStride(Pos);
+                return;
+
+                Console.WriteLine("Error (MMO_Client.Models.TilesModels.Tile) InstanceTile: SPRITE NO ENCONTRADO PARA CLASE " + GetType().FullName);
             }
             catch (Exception ex)
             {
@@ -206,7 +206,7 @@ namespace Interfaz.Models
                 object obtOfType = Activator.CreateInstance(typ); //Requires parameterless constructor.
                                                                   //TODO: System to determine the type of enemy to make the object, prepare stats and then add it to the list
 
-                Tile prgObj = ((Tile)obtOfType);
+                Tile prgObj = (Tile)obtOfType;
 
                 string pst = UtilityAssistant.ExtractValue(strJson, "Position");
                 prgObj.Position = UtilityAssistant.Vector3Deserializer(pst);
@@ -244,8 +244,8 @@ namespace Interfaz.Models
 
                 //TODO: Corregir, testear y terminar
                 string Name = string.IsNullOrWhiteSpace(tle.Name) ? "null" : tle.Name;
-                string Position = System.Text.Json.JsonSerializer.Serialize(tle.Position, serializeOptions);
-                string InWorldPos = System.Text.Json.JsonSerializer.Serialize(tle.InWorldPos, serializeOptions);
+                string Position = JsonSerializer.Serialize(tle.Position, serializeOptions);
+                string InWorldPos = JsonSerializer.Serialize(tle.InWorldPos, serializeOptions);
                 string Class = tle.GetType().Name;
 
                 char[] a = { '"' };

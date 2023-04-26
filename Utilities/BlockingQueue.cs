@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace Interfaz.Auxiliary
+namespace Interfaz.Utilities
 {
     public class BlockingQueue<T> where T : class
     {
@@ -67,9 +67,9 @@ namespace Interfaz.Auxiliary
             {
                 while (queue.Count == 0)
                 {
-                    if (closing || (timeout < Timeout.Infinite) || !Monitor.Wait(queue, timeout))
+                    if (closing || timeout < Timeout.Infinite || !Monitor.Wait(queue, timeout))
                     {
-                        value = default(T);
+                        value = default;
                         return false;
                     }
                 }
@@ -77,7 +77,7 @@ namespace Interfaz.Auxiliary
                 //value = queue.Dequeue();
                 //return true;
                 bool result = queue.TryDequeue(out value);
-                Console.WriteLine("\nDequeuing: "+value);
+                Console.WriteLine("\nDequeuing: " + value);
                 return result;
             }
         }

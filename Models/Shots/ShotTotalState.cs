@@ -1,5 +1,5 @@
-﻿using Interfaz.Auxiliary;
-using Newtonsoft.Json;
+﻿using System.Text.Json;
+//using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 
 namespace Interfaz.Models.Shots
@@ -17,15 +17,15 @@ namespace Interfaz.Models.Shots
         {
             try
             {
-                JsonSerializerSettings serializeOptions = new JsonSerializerSettings
+                JsonSerializerOptions serializeOptions = new JsonSerializerOptions
                 {
                     Converters =
                     {
-                        new ShotTotalStateConverterJSON(),
+                        new ShotTotalStateConverter(),
                     },
                 };
 
-                string json = JsonConvert.SerializeObject(this, serializeOptions);
+                string json = JsonSerializer.Serialize(this, serializeOptions);
                 //ReadCommentHandling = JsonCommentHandling.Skip,
                 //    AllowTrailingCommas = true,
 
@@ -77,15 +77,15 @@ namespace Interfaz.Models.Shots
                     return default(ShotTotalState);
                 }*/
 
-                JsonSerializerSettings serializeOptions = new JsonSerializerSettings
+                JsonSerializerOptions serializeOptions = new JsonSerializerOptions
                 {
                     Converters =
                     {
-                        new ShotTotalStateConverterJSON(),
+                        new ShotTotalStateConverter(),
                     },
                 };
 
-                ShotTotalState shot = JsonConvert.DeserializeObject<ShotTotalState>(json, serializeOptions);
+                ShotTotalState shot = JsonSerializer.Deserialize<ShotTotalState>(json, serializeOptions);
 
                 return shot;
             }
@@ -137,7 +137,61 @@ namespace Interfaz.Models.Shots
         }
     }
 
-    public class ShotTotalStateConverterJSON : JsonConverter<ShotTotalState>
+    public class ShotTotalStateConverter : System.Text.Json.Serialization.JsonConverter<ShotTotalState>
+    {
+        public override ShotTotalState Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            string strEntity = string.Empty;
+            try
+            {
+                //TODO: Corregir, testear y terminar
+                JsonDocument jsonDoc = JsonDocument.ParseValue(ref reader);
+                strEntity = jsonDoc.RootElement.GetRawText();
+                //strEntity = reader.GetString();
+
+                JsonSerializerOptions jsonOptions = new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new ShotConverter(),
+                        new ShotUpdateConverter()
+                    },
+                };
+
+                ShotTotalState resultJson = JsonSerializer.Deserialize<ShotTotalState>(strEntity, jsonOptions);
+                return resultJson;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: (ShotTotalStateConverter) ReadJson(): " + ex.Message + " strEntity: " + strEntity);
+                return default;
+            }
+        }
+
+        public override void Write(Utf8JsonWriter writer, ShotTotalState value, JsonSerializerOptions options)
+        {
+            try
+            {
+                JsonSerializerOptions jsonOptions = new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new ShotConverter(),
+                        new ShotUpdateConverter()
+                    },
+                };
+
+                string resultJson = JsonSerializer.Serialize(value, jsonOptions);
+                writer.WriteStringValue(resultJson);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: (ShotTotalStateConverter) WriteJson(): " + ex.Message);
+            }
+        }
+    }
+
+    /*public class ShotTotalStateConverterJSON : JsonConverter<ShotTotalState>
     {
         public override void WriteJson(JsonWriter writer, ShotTotalState sts, JsonSerializer serializer)
         {
@@ -185,5 +239,5 @@ namespace Interfaz.Models.Shots
                 return default;
             }
         }
-    }
+    }*/
 }

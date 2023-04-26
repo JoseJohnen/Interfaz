@@ -1,5 +1,5 @@
 ﻿using Interfaz.Models.Shots;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Interfaz.Auxiliary
+namespace Interfaz.Utilities
 {
     //TODO: TODO BASICAMENTE; ESTAS CLASES NO ESTAN LISTAS
     public class Vector3Converter : System.Text.Json.Serialization.JsonConverter<Vector3>
@@ -23,30 +23,30 @@ namespace Interfaz.Auxiliary
                 //strJson = reader.GetString();
                 JsonDocument jsonDoc = JsonDocument.ParseValue(ref reader);
                 strJson = jsonDoc.RootElement.GetRawText();
-                strJson = strJson.Replace("\"","").Replace("{a:", "").Replace("{ a:", "").Replace("}","").Trim();
-                
+                strJson = strJson.Replace("\"", "").Replace("{a:", "").Replace("{ a:", "").Replace("}", "").Trim();
+
                 if (strJson.Contains(".�M�"))
                 {
                     //Because it's incomplete
                     return Vector3.Zero;
                 }
 
-                string[] secondStep = strJson.Replace("<", "").Replace("u003C","").Replace(">","").Replace("u003E", "").Replace("\\","").Replace("\"", "").Split("|");
+                string[] secondStep = strJson.Replace("<", "").Replace("u003C", "").Replace(">", "").Replace("u003E", "").Replace("\\", "").Replace("\"", "").Split("|");
 
-                string a = secondStep[0].Replace(".",",").Trim();
+                string a = secondStep[0].Replace(".", ",").Trim();
                 string b = secondStep[1].Replace(".", ",").Trim();
                 string c = secondStep[2].Replace(".", ",").Trim();
 
 
                 //string[] strArray = strJson.Replace("{","").Replace("}","").Split(',');
 
-                Vector3 vector3 = new Vector3(Convert.ToSingle(a),Convert.ToSingle(b), Convert.ToSingle(c));
+                Vector3 vector3 = new Vector3(Convert.ToSingle(a), Convert.ToSingle(b), Convert.ToSingle(c));
                 return vector3;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error: (Vector3Converter) Read(): {0} Message: {1}", strJson, ex.Message);
-                return default(Vector3);
+                return default;
             }
         }
 
@@ -85,7 +85,7 @@ namespace Interfaz.Auxiliary
                 //strJson = reader.GetString();
                 strJson = strJson.Replace("\"", "").Replace("{a:", "").Replace("{ a:", "").Replace("}", "").Trim();
 
-                if(strJson.Contains(".�M�"))
+                if (strJson.Contains(".�M�"))
                 {
                     //Because it's incomplete
                     return Vector3.Zero;
@@ -106,12 +106,12 @@ namespace Interfaz.Auxiliary
             catch (Exception ex)
             {
                 Console.WriteLine("Error: (Vector3Converter) Read(): {0} Message: {1}", strJson, ex.Message);
-                return default(Vector3);
+                return default;
             }
         }
     }
 
-    public class Vector3ConverterJSON : Newtonsoft.Json.JsonConverter<Vector3>
+    /*public class Vector3ConverterJSON : Newtonsoft.Json.JsonConverter<Vector3>
     {
         public override void WriteJson(JsonWriter writer, Vector3 shot, Newtonsoft.Json.JsonSerializer serializer)
         {
@@ -169,5 +169,5 @@ namespace Interfaz.Auxiliary
                 return default(Vector3);
             }
         }
-    }
+    }*/
 }

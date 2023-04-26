@@ -1,5 +1,5 @@
-﻿using Interfaz.Auxiliary;
-using Newtonsoft.Json;
+﻿using Interfaz.Utilities;
+//using Newtonsoft.Json;
 using System.Numerics;
 using System.Text.Json;
 
@@ -158,7 +158,7 @@ namespace Interfaz.Models.Shots
         }
     }
 
-    public class ShotUpdateConverterJSON : JsonConverter<ShotPosUpdate>
+    /*public class ShotUpdateConverterJSON : JsonConverter<ShotPosUpdate>
     {
         public override void WriteJson(JsonWriter writer, ShotPosUpdate shot, Newtonsoft.Json.JsonSerializer serializer)
         {
@@ -204,5 +204,5 @@ namespace Interfaz.Models.Shots
                 return default;
             }
         }
-    }
+    }*/
 }

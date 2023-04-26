@@ -1,9 +1,4 @@
-﻿using Interfaz.Models.Worlds;
-using Interfaz.Auxiliary;
-using System.Drawing;
-using System.Text.Json;
-
-namespace Interfaz.Models.Auxiliary
+﻿namespace Interfaz.Models.Auxiliary
 {
     [Serializable]
     public class Pares<T1, T2>

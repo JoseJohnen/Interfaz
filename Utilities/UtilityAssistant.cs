@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
-namespace Interfaz.Auxiliary
+namespace Interfaz.Utilities
 {
     public class UtilityAssistant
     {
@@ -48,7 +48,7 @@ namespace Interfaz.Auxiliary
             try
             {
                 float evaluator = 0;
-                if ((ValueA < 0 && ValueB > 0) || (ValueA > 0 && ValueB < 0))
+                if (ValueA < 0 && ValueB > 0 || ValueA > 0 && ValueB < 0)
                 {
                     if (ValueA > ValueB)
                     {
@@ -185,8 +185,8 @@ namespace Interfaz.Auxiliary
             try
             {
                 Vector2 reVect = Vector2.Zero;
-                reVect.X = UtilityAssistant.DistanceComparitorByAxis(position1.X, position2.X);
-                reVect.Y = UtilityAssistant.DistanceComparitorByAxis(position1.Y, position2.Y);
+                reVect.X = DistanceComparitorByAxis(position1.X, position2.X);
+                reVect.Y = DistanceComparitorByAxis(position1.Y, position2.Y);
 
                 return reVect;
             }
@@ -202,9 +202,9 @@ namespace Interfaz.Auxiliary
             try
             {
                 Vector3 reVect3 = Vector3.Zero;
-                reVect3.X = UtilityAssistant.DistanceComparitorByAxis(position1.X, position2.X);
-                reVect3.Y = UtilityAssistant.DistanceComparitorByAxis(position1.Y, position2.Y);
-                reVect3.Z = UtilityAssistant.DistanceComparitorByAxis(position1.Z, position2.Z);
+                reVect3.X = DistanceComparitorByAxis(position1.X, position2.X);
+                reVect3.Y = DistanceComparitorByAxis(position1.Y, position2.Y);
+                reVect3.Z = DistanceComparitorByAxis(position1.Z, position2.Z);
 
                 return reVect3;
             }
@@ -265,10 +265,10 @@ namespace Interfaz.Auxiliary
 
                 return new Quaternion
                 {
-                    W = (cr * cp * cy + sr * sp * sy),
-                    X = (sr * cp * cy - cr * sp * sy),
-                    Y = (cr * sp * cy + sr * cp * sy),
-                    Z = (cr * cp * sy - sr * sp * cy)
+                    W = cr * cp * cy + sr * sp * sy,
+                    X = sr * cp * cy - cr * sp * sy,
+                    Y = cr * sp * cy + sr * cp * sy,
+                    Z = cr * cp * sy - sr * sp * cy
                 };
             }
             catch (Exception ex)
@@ -284,7 +284,7 @@ namespace Interfaz.Auxiliary
             {
                 XmlSerializer serializer = new XmlSerializer(typeof(Quaternion));
                 XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-                ns.Add(String.Empty, String.Empty);
+                ns.Add(string.Empty, string.Empty);
                 string result = string.Empty;
                 using (StringWriter textWriter = new StringWriter())
                 {
@@ -296,7 +296,7 @@ namespace Interfaz.Auxiliary
             catch (Exception ex)
             {
                 Console.WriteLine("Error string QuaternionToXml(Quaternion): " + ex.Message);
-                return String.Empty;
+                return string.Empty;
             }
         }
 
@@ -369,10 +369,10 @@ namespace Interfaz.Auxiliary
             float rw = right.W;
 
             Quaternion result = new Quaternion();
-            result.X = (rx * lw + lx * rw + ry * lz) - (rz * ly);
-            result.Y = (ry * lw + ly * rw + rz * lx) - (rx * lz);
-            result.Z = (rz * lw + lz * rw + rx * ly) - (ry * lx);
-            result.W = (rw * lw) - (rx * lx + ry * ly + rz * lz);
+            result.X = rx * lw + lx * rw + ry * lz - rz * ly;
+            result.Y = ry * lw + ly * rw + rz * lx - rx * lz;
+            result.Z = rz * lw + lz * rw + rx * ly - ry * lx;
+            result.W = rw * lw - (rx * lx + ry * ly + rz * lz);
             return result;
         }
         #endregion
@@ -384,8 +384,8 @@ namespace Interfaz.Auxiliary
             {
                 if (!instructions.Contains(particle))
                 {
-                    part1 = String.Empty;
-                    part2 = String.Empty;
+                    part1 = string.Empty;
+                    part2 = string.Empty;
                     return instructions;
                 }
 
@@ -403,9 +403,9 @@ namespace Interfaz.Auxiliary
             catch (Exception ex)
             {
                 Console.WriteLine("Error string ExtractValues(string, string, out string, out string): " + ex.Message);
-                part1 = String.Empty;
-                part2 = String.Empty;
-                return String.Empty;
+                part1 = string.Empty;
+                part2 = string.Empty;
+                return string.Empty;
             }
         }
 
@@ -415,9 +415,9 @@ namespace Interfaz.Auxiliary
             {
                 if (!instructions.Contains(particle))
                 {
-                    part1 = String.Empty;
-                    part2 = String.Empty;
-                    part3 = String.Empty;
+                    part1 = string.Empty;
+                    part2 = string.Empty;
+                    part3 = string.Empty;
                     return instructions;
                 }
 
@@ -436,10 +436,10 @@ namespace Interfaz.Auxiliary
             catch (Exception ex)
             {
                 Console.WriteLine("Error string ExtractValues(string, string, out string, out string): " + ex.Message);
-                part1 = String.Empty;
-                part2 = String.Empty;
-                part3 = String.Empty;
-                return String.Empty;
+                part1 = string.Empty;
+                part2 = string.Empty;
+                part3 = string.Empty;
+                return string.Empty;
             }
         }
 
@@ -455,7 +455,7 @@ namespace Interfaz.Auxiliary
                 //Extract relevant part
                 string particleswithdots = particle + ":";
                 string b = instructions.Substring(instructions.IndexOf(particle));
-                string d = String.Empty;
+                string d = string.Empty;
                 if (b.Contains("\r\n"))
                 {
                     d = b.Substring(0, b.IndexOf("\r\n"));
@@ -472,7 +472,7 @@ namespace Interfaz.Auxiliary
             catch (Exception ex)
             {
                 Console.WriteLine("Error string ExtractValues(string, string): " + ex.Message);
-                return String.Empty;
+                return string.Empty;
             }
         }
 
@@ -492,21 +492,21 @@ namespace Interfaz.Auxiliary
                 }
 
                 string result = instruction;
-                if(instruction.Contains("\u0022"))
+                if (instruction.Contains("\u0022"))
                 {
-                    result = UtilityAssistant.CleanJSON(instruction);
+                    result = CleanJSON(instruction);
                 }
 
-                if(result.Contains("\"" + valueName + "\":"))
+                if (result.Contains("\"" + valueName + "\":"))
                 {
                     result = result.Substring(result.IndexOf("\"" + valueName + "\":"));
                 }
-                else if(result.Contains(valueName))
+                else if (result.Contains(valueName))
                 {
                     result = result.Substring(result.IndexOf(valueName));
                 }
 
-                if(result.Contains(","))
+                if (result.Contains(","))
                 {
                     result = result.Replace(result.Substring(result.IndexOf(",")), "");
                 }
@@ -518,7 +518,7 @@ namespace Interfaz.Auxiliary
             catch (Exception ex)
             {
                 Console.WriteLine("Error string ExtractValues(string, string): " + ex.Message);
-                return String.Empty;
+                return string.Empty;
             }
         }
 
@@ -542,7 +542,7 @@ namespace Interfaz.Auxiliary
             catch (Exception ex)
             {
                 Console.WriteLine("Error string ExtractValues(string, string): " + ex.Message);
-                return String.Empty;
+                return string.Empty;
             }
         }
         #endregion
@@ -550,8 +550,8 @@ namespace Interfaz.Auxiliary
 
         public static double ConvertRadiansToDegrees(double radians)
         {
-            double degrees = (180 / Math.PI) * radians;
-            return (degrees);
+            double degrees = 180 / Math.PI * radians;
+            return degrees;
         }
 
         /// <summary>
@@ -658,12 +658,12 @@ namespace Interfaz.Auxiliary
                         Console.WriteLine("StringReader is Null: " + xml);
                     }
                 }
-                return default(T);
+                return default;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error T XmlToClass<T>: " + ex.Message + " Variable in processing: " + toProcess);
-                return default(T);
+                return default;
             }
         }
 
@@ -672,21 +672,21 @@ namespace Interfaz.Auxiliary
         {
             try
             {
-                if (String.IsNullOrWhiteSpace(instructions))
+                if (string.IsNullOrWhiteSpace(instructions))
                 {
                     remainingInstructions = instructions;
-                    return String.Empty;
+                    return string.Empty;
                 }
                 else
                 {
                     if (!instructions.Contains(signature))
                     {
                         remainingInstructions = instructions;
-                        return String.Empty;
+                        return string.Empty;
                     }
                 }
 
-                string specificRelevantInstruction = UtilityAssistant.ExtractValues(instructions, signature);
+                string specificRelevantInstruction = ExtractValues(instructions, signature);
                 remainingInstructions = instructions.Replace(specificRelevantInstruction, "");
                 return specificRelevantInstruction;
 
@@ -695,7 +695,7 @@ namespace Interfaz.Auxiliary
             {
                 Console.WriteLine("Error ValidateInstructions(string, string, out string): " + ex.Message);
                 remainingInstructions = instructions;
-                return String.Empty;
+                return string.Empty;
             }
         }
 
@@ -706,21 +706,21 @@ namespace Interfaz.Auxiliary
                 part1 = string.Empty;
                 part2 = string.Empty;
 
-                if (String.IsNullOrWhiteSpace(instructions))
+                if (string.IsNullOrWhiteSpace(instructions))
                 {
                     remainingInstructions = instructions;
-                    return String.Empty;
+                    return string.Empty;
                 }
                 else
                 {
                     if (!instructions.Contains(signature))
                     {
                         remainingInstructions = instructions;
-                        return String.Empty;
+                        return string.Empty;
                     }
                 }
 
-                string specificRelevantInstruction = UtilityAssistant.ExtractValues(instructions, signature, out part1, out part2);
+                string specificRelevantInstruction = ExtractValues(instructions, signature, out part1, out part2);
                 remainingInstructions = instructions.Replace(specificRelevantInstruction, "");
                 return specificRelevantInstruction;
 
@@ -731,7 +731,7 @@ namespace Interfaz.Auxiliary
                 remainingInstructions = instructions;
                 part1 = string.Empty;
                 part2 = string.Empty;
-                return String.Empty;
+                return string.Empty;
             }
         }
 
@@ -743,21 +743,21 @@ namespace Interfaz.Auxiliary
                 part2 = string.Empty;
                 part3 = string.Empty;
 
-                if (String.IsNullOrWhiteSpace(instructions))
+                if (string.IsNullOrWhiteSpace(instructions))
                 {
                     remainingInstructions = instructions;
-                    return String.Empty;
+                    return string.Empty;
                 }
                 else
                 {
                     if (!instructions.Contains(signature))
                     {
                         remainingInstructions = instructions;
-                        return String.Empty;
+                        return string.Empty;
                     }
                 }
 
-                string specificRelevantInstruction = UtilityAssistant.ExtractValues(instructions, signature, out part1, out part2, out part3);
+                string specificRelevantInstruction = ExtractValues(instructions, signature, out part1, out part2, out part3);
                 remainingInstructions = instructions.Replace(specificRelevantInstruction, "");
                 return specificRelevantInstruction;
 
@@ -769,7 +769,7 @@ namespace Interfaz.Auxiliary
                 part1 = string.Empty;
                 part2 = string.Empty;
                 part3 = string.Empty;
-                return String.Empty;
+                return string.Empty;
             }
         }
 
@@ -795,7 +795,7 @@ namespace Interfaz.Auxiliary
 
                 if (strTemp.Contains("}"))
                 {
-                    if ((strTemp.Length - strTemp.LastIndexOf("}")) > 2)
+                    if (strTemp.Length - strTemp.LastIndexOf("}") > 2)
                     {
                         //Console.WriteLine("Entro a LastIndexOf>2");
                         strTemp = strTemp.Replace(strTemp.Substring(strTemp.LastIndexOf("}") + 1), "");
@@ -923,19 +923,19 @@ namespace Interfaz.Auxiliary
                         if (strTemp.Contains("}"))
                         {
                             int location = 0;
-                            if ((strTemp.LastIndexOf("}") - 1) < 2)
+                            if (strTemp.LastIndexOf("}") - 1 < 2)
                             {
                                 location = 1;
                             }
                             else
                             {
-                                location = (strTemp.LastIndexOf("}") - 1);
+                                location = strTemp.LastIndexOf("}") - 1;
                             }
                             strTemp = strTemp.Substring(0, location);
                         }
                         if (strTemp.Contains("}"))
                         {
-                            strTemp = strTemp.Substring(0, strTemp.IndexOf("}")+1);
+                            strTemp = strTemp.Substring(0, strTemp.IndexOf("}") + 1);
                         }
                     }
 
@@ -965,7 +965,7 @@ namespace Interfaz.Auxiliary
             try
             {
                 byte[] plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-                return System.Convert.ToBase64String(plainTextBytes);
+                return Convert.ToBase64String(plainTextBytes);
             }
             catch (Exception ex)
             {
@@ -978,14 +978,14 @@ namespace Interfaz.Auxiliary
         {
             try
             {
-                byte[] base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+                byte[] base64EncodedBytes = Convert.FromBase64String(base64EncodedData);
                 string a = System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
 
                 if (a.Contains("="))
                 {
-                    while (a.Contains("==") || (a.LastIndexOf("=") == (a.Length - 1)))
+                    while (a.Contains("==") || a.LastIndexOf("=") == a.Length - 1)
                     {
-                        a = Auxiliary.UtilityAssistant.Base64Decode(a);
+                        a = Base64Decode(a);
                     }
                 }
 
@@ -1003,7 +1003,7 @@ namespace Interfaz.Auxiliary
             try
             {
                 byte[] plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-                result = System.Convert.ToBase64String(plainTextBytes);
+                result = Convert.ToBase64String(plainTextBytes);
                 return true;
             }
             catch (Exception ex)
@@ -1018,14 +1018,14 @@ namespace Interfaz.Auxiliary
         {
             try
             {
-                byte[] base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+                byte[] base64EncodedBytes = Convert.FromBase64String(base64EncodedData);
                 result = System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
 
                 if (result.Contains("="))
                 {
-                    while (result.Contains("==") || (result.LastIndexOf("=") == (result.Length - 1)))
+                    while (result.Contains("==") || result.LastIndexOf("=") == result.Length - 1)
                     {
-                        result = Auxiliary.UtilityAssistant.Base64Decode(result);
+                        result = Base64Decode(result);
                     }
                 }
 
@@ -1072,7 +1072,7 @@ namespace Interfaz.Auxiliary
             catch (Exception ex)
             {
                 Console.WriteLine("Error: (Vector3Converter) Read(): {0} Message: {1}", strJson, ex.Message);
-                return default(Vector3);
+                return default;
             }
         }
     }

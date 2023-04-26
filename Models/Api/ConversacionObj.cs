@@ -1,8 +1,8 @@
 ﻿using Interfaz.Models.Shots;
-using Interfaz.Auxiliary;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 using System.Collections.Immutable;
 using System.Text.Json;
+using Interfaz.Utilities;
 
 namespace Interfaz.Models.Api
 {
@@ -12,11 +12,11 @@ namespace Interfaz.Models.Api
         public List<string> l_bullets_to_update = new List<string>();
         public List<string> l_bullets_to_change_state = new List<string>();
 
-        [JsonIgnore]
+        //[JsonIgnore]
         public List<Shot> L_Bullets_to_create = new List<Shot>();
-        [JsonIgnore]
+        //[JsonIgnore]
         public List<ShotPosUpdate> L_Bullets_to_update = new List<ShotPosUpdate>();
-        [JsonIgnore]
+        //[JsonIgnore]
         public List<ShotState> L_Bullets_to_change_state = new List<ShotState>();
 
         #region Métodos JSON
