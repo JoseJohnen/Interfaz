@@ -12,14 +12,60 @@ namespace Interfaz.Models.Comms
         private ConcurrentQueue<string> l_sendBigMessages = new ConcurrentQueue<string>();
 
         private int receiveAccepted = 0;
+        private BlockingCollection<string> l_SendQueueMessages;
+        private BlockingCollection<string> l_SendBigMessages;
+        private BlockingCollection<string> l_ReceiveQueueMessages;
+        private BlockingCollection<string> l_ReceiveBigMessages;
+
         public string Email { get; set; }
         public Socket ListenerSocket { get; set; }
         public Socket SenderSocket { get; set; }
         public Socket StreamSocket { get; set; }
-        public BlockingCollection<string> l_SendQueueMessages { get; set; }
-        public BlockingCollection<string> l_SendBigMessages { get; set; }
-        public BlockingCollection<string> l_ReceiveQueueMessages { get; set; }
-        public BlockingCollection<string> l_ReceiveBigMessages { get; set; }
+
+        public BlockingCollection<string> L_SendQueueMessages { 
+            get 
+            { 
+                if(l_SendQueueMessages == null)
+                {
+                    l_SendQueueMessages = new BlockingCollection<string>();
+                }
+                return l_SendQueueMessages;
+            }
+            set => l_SendQueueMessages = value; 
+        }
+        public BlockingCollection<string> L_SendBigMessages {
+            get
+            {
+                if (l_SendBigMessages == null)
+                {
+                    l_SendBigMessages = new BlockingCollection<string>();
+                }
+                return l_SendBigMessages;
+            }
+            set => l_SendBigMessages = value; 
+        }
+        public BlockingCollection<string> L_ReceiveQueueMessages {
+            get
+            {
+                if (l_ReceiveQueueMessages == null)
+                {
+                    l_ReceiveQueueMessages = new BlockingCollection<string>();
+                }
+                return l_ReceiveQueueMessages;
+            }
+            set => l_ReceiveQueueMessages = value; 
+        }
+        public BlockingCollection<string> L_ReceiveBigMessages {
+            get 
+            {
+                if (l_ReceiveBigMessages == null)
+                {
+                    l_ReceiveBigMessages = new BlockingCollection<string>();
+                }
+                return l_ReceiveBigMessages;
+            } 
+            set => l_ReceiveBigMessages = value; 
+        }
 
         public Player player { get; set; } = new Player();
 
@@ -35,10 +81,10 @@ namespace Interfaz.Models.Comms
             this.ListenerSocket = ListenerSocket;
             SenderSocket = null;
             StreamSocket = null;
-            l_SendQueueMessages = new BlockingCollection<string>();
-            l_ReceiveQueueMessages = new BlockingCollection<string>();
-            l_SendBigMessages = new BlockingCollection<string>();
-            l_ReceiveBigMessages = new BlockingCollection<string>();
+            L_SendQueueMessages = new BlockingCollection<string>();
+            L_ReceiveQueueMessages = new BlockingCollection<string>();
+            L_SendBigMessages = new BlockingCollection<string>();
+            L_ReceiveBigMessages = new BlockingCollection<string>();
             dic_RegisterMessages = new ConcurrentDictionary<uint, Message>();
             ClientConstructionReady = false;
             SendAsyncIsConnected = false;
@@ -50,10 +96,10 @@ namespace Interfaz.Models.Comms
             ListenerSocket = null;
             SenderSocket = null;
             StreamSocket = null;
-            l_SendQueueMessages = new BlockingCollection<string>();
-            l_ReceiveQueueMessages = new BlockingCollection<string>();
-            l_SendBigMessages = new BlockingCollection<string>();
-            l_ReceiveBigMessages = new BlockingCollection<string>();
+            L_SendQueueMessages = new BlockingCollection<string>();
+            L_ReceiveQueueMessages = new BlockingCollection<string>();
+            L_SendBigMessages = new BlockingCollection<string>();
+            L_ReceiveBigMessages = new BlockingCollection<string>();
             dic_RegisterMessages = new ConcurrentDictionary<uint, Message>();
             ClientConstructionReady = false;
             SendAsyncIsConnected = false;
@@ -63,35 +109,35 @@ namespace Interfaz.Models.Comms
         {
             try
             {
-                if (l_SendQueueMessages != null)
+                if (L_SendQueueMessages != null)
                 {
-                    if (l_SendQueueMessages.Count > 0)
+                    if (L_SendQueueMessages.Count > 0)
                     {
-                        l_SendQueueMessages = null;
+                        L_SendQueueMessages = null;
                     }
                 }
 
-                if (l_ReceiveQueueMessages != null)
+                if (L_ReceiveQueueMessages != null)
                 {
-                    if (l_ReceiveQueueMessages.Count > 0)
+                    if (L_ReceiveQueueMessages.Count > 0)
                     {
-                        l_ReceiveQueueMessages = null;
+                        L_ReceiveQueueMessages = null;
                     }
                 }
 
-                if (l_SendBigMessages != null)
+                if (L_SendBigMessages != null)
                 {
-                    if (l_SendBigMessages.Count > 0)
+                    if (L_SendBigMessages.Count > 0)
                     {
-                        l_SendBigMessages = null;
+                        L_SendBigMessages = null;
                     }
                 }
 
-                if (l_ReceiveBigMessages != null)
+                if (L_ReceiveBigMessages != null)
                 {
-                    if (l_ReceiveBigMessages.Count > 0)
+                    if (L_ReceiveBigMessages.Count > 0)
                     {
-                        l_ReceiveBigMessages = null;
+                        L_ReceiveBigMessages = null;
                     }
                 }
 

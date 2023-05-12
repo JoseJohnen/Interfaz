@@ -291,7 +291,6 @@ namespace Interfaz.Utilities
                     serializer.Serialize(textWriter, quaternion, ns);
                     return textWriter.ToString();
                 }
-                return string.Empty;
             }
             catch (Exception ex)
             {
@@ -510,8 +509,11 @@ namespace Interfaz.Utilities
                 {
                     result = result.Replace(result.Substring(result.IndexOf(",")), "");
                 }
-                string aarg = "\"" + valueName + "\":";
-                result = result.Replace(aarg, "");
+
+                result = UtilityAssistant.PrepareJSON(result);
+                result = result.Replace(valueName, "");
+                result = result.Replace("\"", "");
+                result = result.Replace(":", "");
 
                 return result;
             }
@@ -780,10 +782,15 @@ namespace Interfaz.Utilities
             string base64text = string.Empty;
             try
             {
+
                 //Verificar si es relevante siquiera correr la función
                 if (string.IsNullOrWhiteSpace(strTemp))
                 {
                     return string.Empty;
+                }
+                else if(IsValidJson(strTemp))
+                {
+                    return json;
                 }
 
                 if (strTemp.IndexOf("{") > 1)
@@ -960,6 +967,19 @@ namespace Interfaz.Utilities
             }
         }
 
+        public static bool IsValidJson(string jsonString)
+        {
+            try
+            {
+                JsonDocument.Parse(jsonString);
+                return true;
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+        }
+
         public static string Base64Encode(string plainText)
         {
             try
@@ -1073,6 +1093,27 @@ namespace Interfaz.Utilities
             {
                 Console.WriteLine("Error: (Vector3Converter) Read(): {0} Message: {1}", strJson, ex.Message);
                 return default;
+            }
+        }
+
+        public static string PrepareJSON(string json)
+        {
+            try
+            {
+                string a = json.Replace("\\u0022", "\"");
+                a = a.Replace("\\u003C", "<");
+                a = a.Replace("\\u003E", ">");
+
+                a = json.Replace("u0022", "\"");
+                a = a.Replace("u003C", "<");
+                a = a.Replace("u003E", ">");
+                a = a.Replace("\\", "");
+                return a;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: static PrepareJSON(string): "+ex.Message);
+                return string.Empty;
             }
         }
     }

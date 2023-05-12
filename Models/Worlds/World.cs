@@ -18,7 +18,7 @@ namespace Interfaz.Models.Worlds
         public float FrontBack;
         public float WestEast;
         public float Height;
-        public string Name;
+        private string name;
 
         public ConcurrentDictionary<string, Tile> dic_worldTiles = new ConcurrentDictionary<string, Tile>();
         public Dictionary<Puppet, int> dic_SpawnList = new Dictionary<Puppet, int>();
@@ -33,20 +33,33 @@ namespace Interfaz.Models.Worlds
             set 
             {
                 location = value;
+                Area.Name = "Location";
                 Area.L_AreaDefiners.Where(c => c.NombreArea == "NW").First().Point.Item2 = new SerializedVector3(location + new Vector3(-0.8f / 2, 0.8f / 2, 0));
                 Area.L_AreaDefiners.Where(c => c.NombreArea == "NE").First().Point.Item2 = new SerializedVector3(location + new Vector3(0.8f / 2, 0.8f / 2, 0));
                 Area.L_AreaDefiners.Where(c => c.NombreArea == "SW").First().Point.Item2 = new SerializedVector3(location + new Vector3(-0.8f / 2, -0.8f / 2, 0));
                 Area.L_AreaDefiners.Where(c => c.NombreArea == "SE").First().Point.Item2 = new SerializedVector3(location + new Vector3(0.8f / 2, -0.8f / 2, 0));
             }
         }
+
+        public virtual string Name { get => name; 
+            set 
+            { 
+                name = value;
+                if (Area != null)
+                {
+                    Area.Name = "Area_" + name;
+                }
+            } 
+        }
+
         private Vector3 location = new System.Numerics.Vector3(0, 0, 0);
 
         public Interfaz.Models.Area.Area Area = new Interfaz.Models.Area.Area(new List<AreaDefiner>() {
-            new AreaDefiner(new Pares<string, SerializedVector3>("NW"), "NW"),
-            new AreaDefiner(new Pares<string, SerializedVector3>("NE"), "NE"),
-            new AreaDefiner(new Pares<string, SerializedVector3>("SW"), "SW"),
-            new AreaDefiner(new Pares<string, SerializedVector3>("SE"), "SE"),
-        });
+            new AreaDefiner(new Pares<string, SerializedVector3>("NW",new SerializedVector3(Vector3.Zero)), "NW"),
+            new AreaDefiner(new Pares<string, SerializedVector3>("NE",new SerializedVector3(Vector3.Zero)), "NE"),
+            new AreaDefiner(new Pares<string, SerializedVector3>("SW",new SerializedVector3(Vector3.Zero)), "SW"),
+            new AreaDefiner(new Pares<string, SerializedVector3>("SE",new SerializedVector3(Vector3.Zero)), "SE"),
+        }, "AreaWorld");
 
         public World(int westEast = 3, int height = 1, int frontBack = 3, string name = "")
         {
@@ -55,11 +68,11 @@ namespace Interfaz.Models.Worlds
             FrontBack = frontBack;
             Name = name;
             Area = new Interfaz.Models.Area.Area(new List<AreaDefiner>() {
-                new AreaDefiner(new Pares<string,SerializedVector3>("NW"), "NW"),
-                new AreaDefiner(new Pares<string, SerializedVector3>("NE"), "NE"),
-                new AreaDefiner(new Pares<string, SerializedVector3>("SW"), "SW"),
-                new AreaDefiner(new Pares<string, SerializedVector3>("SE"), "SE"),
-            });
+                new AreaDefiner(new Pares<string,SerializedVector3>("NW",new SerializedVector3(Vector3.Zero)), "NW"),
+                new AreaDefiner(new Pares<string, SerializedVector3>("NE",new SerializedVector3(Vector3.Zero)), "NE"),
+                new AreaDefiner(new Pares<string, SerializedVector3>("SW",new SerializedVector3(Vector3.Zero)), "SW"),
+                new AreaDefiner(new Pares<string, SerializedVector3>("SE",new SerializedVector3(Vector3.Zero)), "SE"),
+            }, "AreaWorld");
         }
 
         public virtual bool IsInsideAreaWorld(Vector3 position)

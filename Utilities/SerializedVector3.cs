@@ -262,5 +262,10 @@ namespace Interfaz.Utilities
 
         public static bool operator !=(SerializedVector3 a, SerializedVector3 b)
         => a.X != b.X && a.Y != b.Y && a.Z != b.Z;
+
+        public override bool Equals(Object sv3)
+        => (X != ((SerializedVector3)sv3).X && Y != ((SerializedVector3)sv3).Y && Z != ((SerializedVector3)sv3).Z);
+
+        public override int GetHashCode() { return 0; }
     }
 }

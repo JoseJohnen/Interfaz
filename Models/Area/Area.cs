@@ -27,8 +27,9 @@ namespace Interfaz.Models.Area
             this.L_AreaDefiners.Add(new AreaDefiner());
         }
 
-        public Area(List<AreaDefiner> L_AreaDefiners)
+        public Area(List<AreaDefiner> L_AreaDefiners, string Name = "")
         {
+            this.Name = Name;
             this.L_AreaDefiners = L_AreaDefiners;
         }
 
@@ -39,6 +40,7 @@ namespace Interfaz.Models.Area
             {
                 this.L_AreaDefiners.Add(new AreaDefiner(new Pares<string, SerializedVector3>(string.Empty, new SerializedVector3(item)), Name));
             }
+            this.Name = Name;
         }
 
         public Area(IEnumerable<AreaDefiner> collection) : base(collection)
