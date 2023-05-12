@@ -67,9 +67,9 @@ namespace Interfaz.Utilities
             {
                 while (queue.Count == 0)
                 {
-                    if (closing || (timeout < Timeout.Infinite) || !Monitor.Wait(queue, timeout))
+                    if (closing || timeout < Timeout.Infinite || !Monitor.Wait(queue, timeout))
                     {
-                        value = default(T);
+                        value = default;
                         return false;
                     }
                 }
@@ -77,7 +77,7 @@ namespace Interfaz.Utilities
                 //value = queue.Dequeue();
                 //return true;
                 bool result = queue.TryDequeue(out value);
-                Console.WriteLine("\nDequeuing: "+value);
+                Console.WriteLine("\nDequeuing: " + value);
                 return result;
             }
         }

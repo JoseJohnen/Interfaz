@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
 
-namespace Interfaz.Models
+namespace Interfaz.Models.Comms
 {
     public class MissingMessages
     {
@@ -18,7 +18,7 @@ namespace Interfaz.Models
         public MissingMessages(string[] message, string extra = null)
         {
             l_missingMessages.AddRange(message);
-            if(!string.IsNullOrWhiteSpace(extra))
+            if (!string.IsNullOrWhiteSpace(extra))
             {
                 extraValue = extra;
             }
@@ -48,7 +48,7 @@ namespace Interfaz.Models
 
                 if (!string.IsNullOrWhiteSpace(extraValue))
                 {
-                    result += " \"extraValue\":" + this.extraValue;
+                    result += " \"extraValue\":" + extraValue;
                 }
 
                 result += "}";
@@ -73,7 +73,7 @@ namespace Interfaz.Models
 
                 foreach (string item in arrStrings)
                 {
-                    this.l_missingMessages.Add(item);
+                    l_missingMessages.Add(item);
                 }
 
                 string strProcess2 = txt.Substring(txt.IndexOf("]") + 1);
@@ -83,7 +83,7 @@ namespace Interfaz.Models
                     strProcess2 = strProcess2.Replace("}", "");
                     if (!string.IsNullOrWhiteSpace(strProcess2))
                     {
-                        this.extraValue = strProcess2;
+                        extraValue = strProcess2;
                     }
                 }
 

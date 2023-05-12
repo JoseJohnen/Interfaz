@@ -38,21 +38,21 @@ namespace Interfaz.Utilities
 
         public SerializedVector3(float x, float y, float z)
         {
-            this.X = x;
-            this.Y = y;
-            this.Z = z;
+            X = x;
+            Y = y;
+            Z = z;
         }
 
         public SerializedVector3(string strVector3)
         {
             try
             {
-                if (!String.IsNullOrWhiteSpace(strVector3))
+                if (!string.IsNullOrWhiteSpace(strVector3))
                 {
                     string[] b = strVector3.Trim().Split(' ');
-                    this.X = float.Parse(b[0].Substring(2));
-                    this.Y = float.Parse(b[1].Substring(2));
-                    this.Z = float.Parse(b[2].Substring(2));
+                    X = float.Parse(b[0].Substring(2));
+                    Y = float.Parse(b[1].Substring(2));
+                    Z = float.Parse(b[2].Substring(2));
                 }
             }
             catch (Exception ex)
@@ -63,9 +63,9 @@ namespace Interfaz.Utilities
 
         public SerializedVector3(Vector3 vector3)
         {
-            X = SerializedVector3.IsNaN(vector3.X) ? 0 : vector3.X;
-            Y = SerializedVector3.IsNaN(vector3.Y) ? 0 : vector3.Y;
-            Z = SerializedVector3.IsNaN(vector3.Z) ? 0 : vector3.Z;
+            X = IsNaN(vector3.X) ? 0 : vector3.X;
+            Y = IsNaN(vector3.Y) ? 0 : vector3.Y;
+            Z = IsNaN(vector3.Z) ? 0 : vector3.Z;
         }
 
         public SerializedVector3()
@@ -77,7 +77,7 @@ namespace Interfaz.Utilities
 
         public override string ToString()
         {
-            string serialized = "X:" + this.x + " Y:" + this.y + " Z:" + this.z;
+            string serialized = "X:" + x + " Y:" + y + " Z:" + z;
             return serialized;
         }
 
@@ -104,13 +104,13 @@ namespace Interfaz.Utilities
 
         public static unsafe bool IsNaN(float f)
         {
-            int binary = *(int*)(&f);
-            return ((binary & 0x7F800000) == 0x7F800000) && ((binary & 0x007FFFFF) != 0);
+            int binary = *(int*)&f;
+            return (binary & 0x7F800000) == 0x7F800000 && (binary & 0x007FFFFF) != 0;
         }
 
         public Vector3 ConvertToVector3()
         {
-            return new Vector3(this.x, this.y, this.z);
+            return new Vector3(x, y, z);
         }
 
         public static Vector3 ConvertToVector3(SerializedVector3 serializedVector3)
@@ -123,7 +123,7 @@ namespace Interfaz.Utilities
             try
             {
                 XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-                ns.Add(String.Empty, String.Empty);
+                ns.Add(string.Empty, string.Empty);
                 XmlSerializer serializer = new XmlSerializer(typeof(SerializedVector3));
                 string result = string.Empty;
                 using (StringWriter textWriter = new StringWriter())
@@ -162,7 +162,7 @@ namespace Interfaz.Utilities
             }
         }
 
-        public enum TextOrNewtonsoft { Text = 0, Newtonsoft = 1}
+        /*public enum TextOrNewtonsoft { Text = 0, Newtonsoft = 1}
         public string ToJson(TextOrNewtonsoft ton = TextOrNewtonsoft.Text)
         {
             try
@@ -182,13 +182,27 @@ namespace Interfaz.Utilities
                 Console.WriteLine("Error string ToJson: " + ex.Message);
                 return string.Empty;
             }
-        }
+        }*/
 
-        public static string ToJson(SerializedVector3 serializedVector3, TextOrNewtonsoft ton = TextOrNewtonsoft.Text)
+        public string ToJson()
         {
             try
             {
-                return serializedVector3.ToJson(ton);
+                return JsonSerializer.Serialize(this);
+                //return "{ \"X\":" + this.X + ", \"Y\":" + this.Y + ", \"Z\":" + this.Z + " }";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string ToJson: " + ex.Message);
+                return string.Empty;
+            }
+        }
+
+        public static string ToJson(SerializedVector3 serializedVector3)//, TextOrNewtonsoft ton = TextOrNewtonsoft.Text)
+        {
+            try
+            {
+                return serializedVector3.ToJson();//ton);
                 //return "{ \"X\":" + serializedVector3.X + ", \"Y\":" + serializedVector3.Y + ", \"Z\":" + serializedVector3.Z + " }";
             }
             catch (Exception ex)
@@ -202,7 +216,7 @@ namespace Interfaz.Utilities
         {
             try
             {
-                if(string.IsNullOrWhiteSpace(strJson))
+                if (string.IsNullOrWhiteSpace(strJson))
                 {
                     return new SerializedVector3();
                 }
@@ -213,10 +227,10 @@ namespace Interfaz.Utilities
                 float[] fltArry = new float[arrResult.Length];
                 for (int i = 0; i < arrResult.Length; i++)
                 {
-                    string d = arrResult[i].Substring(arrResult[i].IndexOf(":")+1)+"Listo";
-                    if (!float.TryParse(arrResult[i].Substring(arrResult[i].IndexOf(":")+1), out fltArry[i]))
+                    string d = arrResult[i].Substring(arrResult[i].IndexOf(":") + 1) + "Listo";
+                    if (!float.TryParse(arrResult[i].Substring(arrResult[i].IndexOf(":") + 1), out fltArry[i]))
                     {
-                        throw (new Exception("Conversion Failed in position: "+i+ " |Asociated Values Total: " + arrResult[i]+" |Specific Values: "+ arrResult[i].Substring(arrResult[i].IndexOf(":") + 1)));
+                        throw new Exception("Conversion Failed in position: " + i + " |Asociated Values Total: " + arrResult[i] + " |Specific Values: " + arrResult[i].Substring(arrResult[i].IndexOf(":") + 1));
                     }
                 }
                 string[] a = arrResult;
@@ -244,9 +258,14 @@ namespace Interfaz.Utilities
         => new SerializedVector3(a.x / b.x, a.y / b.y, a.z / b.z);
 
         public static bool operator ==(SerializedVector3 a, SerializedVector3 b)
-        => (a.X == b.X && a.Y == b.Y && a.Z == b.Z);
+        => a.X == b.X && a.Y == b.Y && a.Z == b.Z;
 
         public static bool operator !=(SerializedVector3 a, SerializedVector3 b)
-        => (a.X != b.X && a.Y != b.Y && a.Z != b.Z);
+        => a.X != b.X && a.Y != b.Y && a.Z != b.Z;
+
+        public override bool Equals(Object sv3)
+        => (X != ((SerializedVector3)sv3).X && Y != ((SerializedVector3)sv3).Y && Z != ((SerializedVector3)sv3).Z);
+
+        public override int GetHashCode() { return 0; }
     }
 }

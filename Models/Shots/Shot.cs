@@ -4,16 +4,16 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Interfaz.Utilities;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 
-namespace Interfaz.Models
+namespace Interfaz.Models.Shots
 {
     public struct Shot
     {
         [System.Text.Json.Serialization.JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public string Id { get; set; }
-        public String LN { get; set; }
-        public String Type { get; set; }
+        public string LN { get; set; }
+        public string Type { get; set; }
         public Vector3 OrPos { get; set; }
         public Vector3 WPos { get; set; }
         public Vector3 Mdf { get; set; }
@@ -70,7 +70,7 @@ namespace Interfaz.Models
             catch (Exception ex)
             {
                 Console.WriteLine("Error (Shot) FromJson(): " + ex.Message);
-                return default(Shot);
+                return default;
             }
         }
 
@@ -84,7 +84,7 @@ namespace Interfaz.Models
             catch (Exception ex)
             {
                 Console.WriteLine("Error (Shot) FromJson(): " + ex.Message);
-                return default(Shot);
+                return default;
             }
         }
     }
@@ -111,11 +111,11 @@ namespace Interfaz.Models
 
                 Shot shot = new Shot();
                 strJson = strJson.Replace("\"", "").Replace(":<", ":\"<").Replace(">}", ">\"}").Replace(".�M�", ">");
-                string[] a = strJson.Replace("{","").Replace("}","").Split(",");//UtilityAssistant.CutJson(strJson);
+                string[] a = strJson.Replace("{", "").Replace("}", "").Split(",");//UtilityAssistant.CutJson(strJson);
 
                 if (a[0] != null)
                 {
-                    shot.Id = "\""+a[0].Substring(a[0].IndexOf(":")+1)+"\"";
+                    shot.Id = "\"" + a[0].Substring(a[0].IndexOf(":") + 1) + "\"";
                 }
                 else
                 {
@@ -145,7 +145,7 @@ namespace Interfaz.Models
 
                 if (a[3] != null)
                 {
-                    string fd = a[3].Substring(a[3].IndexOf(":")+1);
+                    string fd = a[3].Substring(a[3].IndexOf(":") + 1);
                     shot.OrPos = Vector3Converter.Converter(fd);
                     //shot.OrPos = System.Text.Json.JsonSerializer.Deserialize<Vector3>(fd, serializeOptions); //SerializedVector3.FromJson(a[3].Substring(a[3].IndexOf(":") + 1)).ConvertToVector3();
                 }
@@ -182,7 +182,7 @@ namespace Interfaz.Models
             catch (Exception ex)
             {
                 Console.WriteLine("Error: (ShotConverter) Read(): {0} Message: {1}", strJson, ex.Message);
-                return default(Shot);
+                return default;
             }
         }
 
@@ -192,8 +192,8 @@ namespace Interfaz.Models
             {
                 //TODO: Corregir, testear y terminar
                 string Id = string.IsNullOrWhiteSpace(shot.Id) ? "null" : shot.Id; //"\"" + shot.Id + "\"";
-                string LauncherName = string.IsNullOrWhiteSpace(shot.LN)? "null" : shot.LN ; //"\"" + shot.LN + "\"";
-                string Type = string.IsNullOrWhiteSpace(shot.Type) ? "null" : shot.Type ; //"\"" + shot.Type + "\"";
+                string LauncherName = string.IsNullOrWhiteSpace(shot.LN) ? "null" : shot.LN; //"\"" + shot.LN + "\"";
+                string Type = string.IsNullOrWhiteSpace(shot.Type) ? "null" : shot.Type; //"\"" + shot.Type + "\"";
                 //string LauncherPos = new SerializedVector3(shot.OrPos).ToXML();
                 //string WeaponPos = new SerializedVector3(shot.WPos).ToXML();
                 //string Moddif = new SerializedVector3(shot.Mdf).ToXML();
@@ -218,9 +218,9 @@ namespace Interfaz.Models
                 //string wr =
 
 
-                string wr = @String.Concat("{ ", new string(a), "Id", new string(a), ":", new string(a), Id, new string(a),
-                    ", ",new string(a), "LN", new string(a), ":" , new string(a), LauncherName, new string(a),
-                    ", " , new string(a), "Type", new string(a), ":", new string(a), Type, new string(a),
+                string wr = string.Concat("{ ", new string(a), "Id", new string(a), ":", new string(a), Id, new string(a),
+                    ", ", new string(a), "LN", new string(a), ":", new string(a), LauncherName, new string(a),
+                    ", ", new string(a), "Type", new string(a), ":", new string(a), Type, new string(a),
                     ", ", new string(a), "OrPos", new string(a), ":", LauncherPos,
                     ", ", new string(a), "WPos", new string(a), ":", WeaponPos,
                     ", ", new string(a), "Mdf", new string(a), ":", Moddif,
@@ -237,7 +237,7 @@ namespace Interfaz.Models
         }
     }
 
-    public class ShotConverterJSON : Newtonsoft.Json.JsonConverter<Shot>
+    /*public class ShotConverterJSON : Newtonsoft.Json.JsonConverter<Shot>
     {
         public override void WriteJson(JsonWriter writer, Shot shot, Newtonsoft.Json.JsonSerializer serializer)
         {
@@ -292,8 +292,9 @@ namespace Interfaz.Models
             catch (Exception ex)
             {
                 Console.WriteLine("Error: (ShotConverterJSON) ReadJson(): {0} Message: {1}", strJson, ex.Message);
-                return default(Shot);
+                return default;
             }
         }
     }
+    */
 }

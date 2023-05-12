@@ -1,13 +1,13 @@
-﻿using Interfaz.Utilities;
-using Newtonsoft.Json;
+﻿using System.Text.Json;
+//using Newtonsoft.Json;
 using System.Text.RegularExpressions;
 
-namespace Interfaz.Models
+namespace Interfaz.Models.Shots
 {
     public struct ShotTotalState
     {
         public List<ShotPosUpdate> l_shotsPosUpdates = new List<ShotPosUpdate>();
-        
+
         public ShotTotalState()
         {
             l_shotsPosUpdates = new List<ShotPosUpdate>();
@@ -17,15 +17,15 @@ namespace Interfaz.Models
         {
             try
             {
-                JsonSerializerSettings serializeOptions = new JsonSerializerSettings
+                JsonSerializerOptions serializeOptions = new JsonSerializerOptions
                 {
                     Converters =
                     {
-                        new ShotTotalStateConverterJSON(),
+                        new ShotTotalStateConverter(),
                     },
                 };
 
-                string json = JsonConvert.SerializeObject(this, serializeOptions);
+                string json = JsonSerializer.Serialize(this, serializeOptions);
                 //ReadCommentHandling = JsonCommentHandling.Skip,
                 //    AllowTrailingCommas = true,
 
@@ -77,25 +77,25 @@ namespace Interfaz.Models
                     return default(ShotTotalState);
                 }*/
 
-                JsonSerializerSettings serializeOptions = new JsonSerializerSettings
+                JsonSerializerOptions serializeOptions = new JsonSerializerOptions
                 {
                     Converters =
                     {
-                        new ShotTotalStateConverterJSON(),
+                        new ShotTotalStateConverter(),
                     },
                 };
 
-                ShotTotalState shot = JsonConvert.DeserializeObject<ShotTotalState>(json, serializeOptions);
+                ShotTotalState shot = JsonSerializer.Deserialize<ShotTotalState>(json, serializeOptions);
 
                 return shot;
             }
             catch (Exception ex)
             {
-                Console.BackgroundColor = ConsoleColor.Red; 
+                Console.BackgroundColor = ConsoleColor.Red;
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine("Error ShotTotalState FromJson(): json: "  + json + " Message: "+ ex.Message);
+                Console.WriteLine("Error ShotTotalState FromJson(): json: " + json + " Message: " + ex.Message);
                 Console.ResetColor();
-                return default(ShotTotalState);
+                return default;
             }
         }
 
@@ -110,18 +110,18 @@ namespace Interfaz.Models
                     string[] jsonCuts = json.Split("SM:", StringSplitOptions.RemoveEmptyEntries);
                     shotTotalStates = new ShotTotalState[jsonCuts.Length];
                     int i = 0;
-                    foreach (string jsonCut in jsonCuts.Where(f => (f[1] == '{') && (f[(f.Length - 2)] == '}')).ToList())
+                    foreach (string jsonCut in jsonCuts.Where(f => f[1] == '{' && f[f.Length - 2] == '}').ToList())
                     {
                         ShotTotalState shot = new();
                         shotTotalStates[i] = shot.FromJson(jsonCut);
                         i++;
                         Console.WriteLine("From FromJSON: " + jsonCut);
-                        Console.WriteLine("FirstCharacter is {0}, because it is {1}", (jsonCut[1] == '{'), jsonCut[1]);
-                        Console.WriteLine("LastCharacter is {0}, because it is {1}", (jsonCut[(jsonCut.Length - 2)] == '}'), jsonCut[(jsonCut.Length - 2)]);
+                        Console.WriteLine("FirstCharacter is {0}, because it is {1}", jsonCut[1] == '{', jsonCut[1]);
+                        Console.WriteLine("LastCharacter is {0}, because it is {1}", jsonCut[jsonCut.Length - 2] == '}', jsonCut[jsonCut.Length - 2]);
                     }
                     Console.ResetColor();
                 }
-                else if(Regex.Matches(json, "SM:").Count == 0)
+                else if (Regex.Matches(json, "SM:").Count == 0)
                 {
                     ShotTotalState shot = new();
                     shotTotalStates[0] = shot.FromJson(json);
@@ -137,9 +137,63 @@ namespace Interfaz.Models
         }
     }
 
-    public class ShotTotalStateConverterJSON : Newtonsoft.Json.JsonConverter<ShotTotalState>
+    public class ShotTotalStateConverter : System.Text.Json.Serialization.JsonConverter<ShotTotalState>
     {
-        public override void WriteJson(JsonWriter writer, ShotTotalState sts, Newtonsoft.Json.JsonSerializer serializer)
+        public override ShotTotalState Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            string strEntity = string.Empty;
+            try
+            {
+                //TODO: Corregir, testear y terminar
+                JsonDocument jsonDoc = JsonDocument.ParseValue(ref reader);
+                strEntity = jsonDoc.RootElement.GetRawText();
+                //strEntity = reader.GetString();
+
+                JsonSerializerOptions jsonOptions = new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new ShotConverter(),
+                        new ShotUpdateConverter()
+                    },
+                };
+
+                ShotTotalState resultJson = JsonSerializer.Deserialize<ShotTotalState>(strEntity, jsonOptions);
+                return resultJson;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: (ShotTotalStateConverter) ReadJson(): " + ex.Message + " strEntity: " + strEntity);
+                return default;
+            }
+        }
+
+        public override void Write(Utf8JsonWriter writer, ShotTotalState value, JsonSerializerOptions options)
+        {
+            try
+            {
+                JsonSerializerOptions jsonOptions = new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new ShotConverter(),
+                        new ShotUpdateConverter()
+                    },
+                };
+
+                string resultJson = JsonSerializer.Serialize(value, jsonOptions);
+                writer.WriteStringValue(resultJson);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: (ShotTotalStateConverter) WriteJson(): " + ex.Message);
+            }
+        }
+    }
+
+    /*public class ShotTotalStateConverterJSON : JsonConverter<ShotTotalState>
+    {
+        public override void WriteJson(JsonWriter writer, ShotTotalState sts, JsonSerializer serializer)
         {
             try
             {
@@ -161,7 +215,7 @@ namespace Interfaz.Models
             }
         }
 
-        public override ShotTotalState ReadJson(JsonReader reader, Type objectType, ShotTotalState existingValue, bool hasExistingValue, Newtonsoft.Json.JsonSerializer serializer)
+        public override ShotTotalState ReadJson(JsonReader reader, Type objectType, ShotTotalState existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             string strEntity = string.Empty;
             try
@@ -181,9 +235,9 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: (ShotTotalStateConverterJSON) ReadJson(): " + ex.Message + " strEntity: "+ strEntity);
-                return default(ShotTotalState);
+                Console.WriteLine("Error: (ShotTotalStateConverterJSON) ReadJson(): " + ex.Message + " strEntity: " + strEntity);
+                return default;
             }
         }
-    }
+    }*/
 }

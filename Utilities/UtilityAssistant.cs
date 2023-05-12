@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using System.Numerics;
+﻿using System.Numerics;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
@@ -48,7 +48,7 @@ namespace Interfaz.Utilities
             try
             {
                 float evaluator = 0;
-                if ((ValueA < 0 && ValueB > 0) || (ValueA > 0 && ValueB < 0))
+                if (ValueA < 0 && ValueB > 0 || ValueA > 0 && ValueB < 0)
                 {
                     if (ValueA > ValueB)
                     {
@@ -124,104 +124,6 @@ namespace Interfaz.Utilities
             }
         }
 
-        public static string ExtractValues(string instructions, string particle, out string part1, out string part2)
-        {
-            try
-            {
-                if (!instructions.Contains(particle))
-                {
-                    part1 = String.Empty;
-                    part2 = String.Empty;
-                    return instructions;
-                }
-
-                //Extract relevant part
-                string particleswithdots = particle + ":";
-                string b = instructions.Substring(instructions.IndexOf(particle));
-                string d = b.Contains("r/n/") ? b.Substring(0, b.IndexOf("r/n/")) : b;
-
-                //Process relevant part
-                string specificRelevantInstruction = d.Substring(particleswithdots.Length);
-                part1 = specificRelevantInstruction.Substring(0, 2);
-                part2 = specificRelevantInstruction.Substring(2);
-                return specificRelevantInstruction;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error string ExtractValues(string, string, out string, out string): " + ex.Message);
-                part1 = String.Empty;
-                part2 = String.Empty;
-                return String.Empty;
-            }
-        }
-
-        public static string ExtractValues(string instructions, string particle, out string part1, out string part2, out string part3)
-        {
-            try
-            {
-                if (!instructions.Contains(particle))
-                {
-                    part1 = String.Empty;
-                    part2 = String.Empty;
-                    part3 = String.Empty;
-                    return instructions;
-                }
-
-                //Extract relevant part
-                string particleswithdots = particle + ":";
-                string b = instructions.Substring(instructions.IndexOf(particle));
-                string d = b.Contains("r/n/") ? b.Substring(0, b.IndexOf("r/n/")) : b;
-
-                //Process relevant part
-                string specificRelevantInstruction = d.Substring(particleswithdots.Length);
-                part1 = specificRelevantInstruction.Substring(0, 2);
-                part2 = specificRelevantInstruction.Substring(2, 2);
-                part3 = specificRelevantInstruction.Substring(4);
-                return specificRelevantInstruction;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error string ExtractValues(string, string, out string, out string): " + ex.Message);
-                part1 = String.Empty;
-                part2 = String.Empty;
-                part3 = String.Empty;
-                return String.Empty;
-            }
-        }
-
-        public static string ExtractValues(string instructions, string particle)
-        {
-            try
-            {
-                if (!instructions.Contains(particle))
-                {
-                    return instructions;
-                }
-
-                //Extract relevant part
-                string particleswithdots = particle + ":";
-                string b = instructions.Substring(instructions.IndexOf(particle));
-                string d = String.Empty;
-                if (b.Contains("\r\n"))
-                {
-                    d = b.Substring(0, b.IndexOf("\r\n"));
-                }
-                else
-                {
-                    d = b;
-                }
-
-                //Process relevant part
-                string specificRelevantInstruction = d.Substring(particleswithdots.Length);
-                return specificRelevantInstruction;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error string ExtractValues(string, string): " + ex.Message);
-                return String.Empty;
-            }
-        }
-
         /// <summary>
         /// Compare floats, usually used in floats of position, to determine what is the directional difference between them, it will return a -1, 0 or 1 depending of the imaginary nature of the answer 
         /// </summary>
@@ -278,18 +180,182 @@ namespace Interfaz.Utilities
             }
         }
 
-        public static double ConvertRadiansToDegrees(double radians)
+        public static Vector2 DistanceComparitorVector2(Vector2 position1, Vector2 position2, float DetectionArea = 15)
         {
-            double degrees = (180 / Math.PI) * radians;
-            return (degrees);
+            try
+            {
+                Vector2 reVect = Vector2.Zero;
+                reVect.X = DistanceComparitorByAxis(position1.X, position2.X);
+                reVect.Y = DistanceComparitorByAxis(position1.Y, position2.Y);
+
+                return reVect;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error (Puppet) DetectEntityInRange(Vector3, float): " + ex.Message);
+                return Vector2.Zero;
+            }
         }
 
+        public static Vector3 DistanceComparitorVector3(Vector3 position1, Vector3 position2, float DetectionArea = 15)
+        {
+            try
+            {
+                Vector3 reVect3 = Vector3.Zero;
+                reVect3.X = DistanceComparitorByAxis(position1.X, position2.X);
+                reVect3.Y = DistanceComparitorByAxis(position1.Y, position2.Y);
+                reVect3.Z = DistanceComparitorByAxis(position1.Z, position2.Z);
+
+                return reVect3;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error (Puppet) DetectEntityInRange(Vector3, float): " + ex.Message);
+                return Vector3.Zero;
+            }
+        }
+
+        #region Quaternion Related
         /// <summary>
-        /// Modulates a quaternion by another.
+        /// Recibe un string en formato 'X:# Y:# Z:# W:#' y lo convierte en un Quaternion con dichos parámetros, luego retorna dicho Quaternion.
         /// </summary>
-        /// <param name="left">The first quaternion to modulate.</param>
-        /// <param name="right">The second quaternion to modulate.</param>
-        /// <param name="result">When the moethod completes, contains the modulated quaternion.</param>
+        /// <param name="information">String containing the quaternion information in format X:# Y:# Z:# W:#</param>
+        /// <returns></returns>
+        public static Quaternion StringToQuaternion(string information)
+        {
+            try
+            {
+                string sQuaternion = "(" + information.Replace(",", ".").Replace(" ", ",").Replace("}", "").Replace("{", "") + ")";
+                // Remove the parentheses
+                if (sQuaternion.StartsWith("(") && sQuaternion.EndsWith(")"))
+                {
+                    sQuaternion = sQuaternion.Substring(1, sQuaternion.Length - 2);
+                }
+
+                // split the items
+                string[] sArray = sQuaternion.Split(',');
+
+                // store as a Vector3
+                Quaternion result = new Quaternion(
+                    float.Parse(sArray[0].Replace(".", ",").Substring(2)),
+                    float.Parse(sArray[1].Replace(".", ",").Substring(2)),
+                    float.Parse(sArray[2].Replace(".", ",").Substring(2)),
+                    float.Parse(sArray[3].Replace(".", ",").Substring(2)));
+
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Quaternion StringToQuaternion(string): " + ex.Message, ConsoleColor.Red);
+                return Quaternion.Identity;
+            }
+        }
+
+        public static Quaternion ToQuaternion(Vector3 v)
+        {
+            try
+            {
+                float cy = (float)Math.Cos(v.Z * 0.5);
+                float sy = (float)Math.Sin(v.Z * 0.5);
+                float cp = (float)Math.Cos(v.Y * 0.5);
+                float sp = (float)Math.Sin(v.Y * 0.5);
+                float cr = (float)Math.Cos(v.X * 0.5);
+                float sr = (float)Math.Sin(v.X * 0.5);
+
+                return new Quaternion
+                {
+                    W = cr * cp * cy + sr * sp * sy,
+                    X = sr * cp * cy - cr * sp * sy,
+                    Y = cr * sp * cy + sr * cp * sy,
+                    Z = cr * cp * sy - sr * sp * cy
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Quaternion ToQuaternion(Vector3): " + ex.Message, ConsoleColor.Red);
+                return Quaternion.Identity;
+            }
+        }
+
+        public static string QuaternionToXml(Quaternion quaternion)
+        {
+            try
+            {
+                XmlSerializer serializer = new XmlSerializer(typeof(Quaternion));
+                XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+                ns.Add(string.Empty, string.Empty);
+                string result = string.Empty;
+                using (StringWriter textWriter = new StringWriter())
+                {
+                    serializer.Serialize(textWriter, quaternion, ns);
+                    return textWriter.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string QuaternionToXml(Quaternion): " + ex.Message);
+                return string.Empty;
+            }
+        }
+
+        public static Vector3 ToEulerAngles(Quaternion q)
+        {
+            try
+            {
+                Vector3 angles = new();
+
+                // roll / x
+                double sinr_cosp = 2 * (q.W * q.X + q.Y * q.Z);
+                double cosr_cosp = 1 - 2 * (q.X * q.X + q.Y * q.Y);
+                angles.X = (float)Math.Atan2(sinr_cosp, cosr_cosp);
+
+                // pitch / y
+                double sinp = 2 * (q.W * q.Y - q.Z * q.X);
+                if (Math.Abs(sinp) >= 1)
+                {
+                    angles.Y = (float)Math.CopySign(Math.PI / 2, sinp);
+                }
+                else
+                {
+                    angles.Y = (float)Math.Asin(sinp);
+                }
+
+                // yaw / z
+                double siny_cosp = 2 * (q.W * q.Z + q.X * q.Y);
+                double cosy_cosp = 1 - 2 * (q.Y * q.Y + q.Z * q.Z);
+                angles.Z = (float)Math.Atan2(siny_cosp, cosy_cosp);
+
+                return angles;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error Vector3 ToEulerAngles(Quaternion): " + ex.Message);
+                return Vector3.Zero;
+            }
+        }
+
+        public static Quaternion RotateX(float angle)
+        {
+            //Determina la rotación a partir de un ángulo
+            float num = angle * 0.5f;
+            return new Quaternion((float)Math.Sin(num), 0f, 0f, (float)Math.Cos(num));
+        }
+
+        public static Quaternion RotateY(float angle)
+        {
+            //Determina la rotación a partir de un ángulo
+            float num = angle * 0.5f;
+            return new Quaternion(0f, (float)Math.Sin(num), 0f, (float)Math.Cos(num));
+        }
+
+        public static Quaternion RotateZ(float angle)
+        {
+            //Determina la rotación a partir de un ángulo
+            float num = angle * 0.5f;
+            return new Quaternion(0f, 0f, (float)Math.Sin(num), (float)Math.Cos(num));
+        }
+
         public static Quaternion MultiplyQuaternions(Quaternion left, Quaternion right)
         {
             float lx = left.X;
@@ -302,60 +368,200 @@ namespace Interfaz.Utilities
             float rw = right.W;
 
             Quaternion result = new Quaternion();
-            result.X = (rx * lw + lx * rw + ry * lz) - (rz * ly);
-            result.Y = (ry * lw + ly * rw + rz * lx) - (rx * lz);
-            result.Z = (rz * lw + lz * rw + rx * ly) - (ry * lx);
-            result.W = (rw * lw) - (rx * lx + ry * ly + rz * lz);
+            result.X = rx * lw + lx * rw + ry * lz - rz * ly;
+            result.Y = ry * lw + ly * rw + rz * lx - rx * lz;
+            result.Z = rz * lw + lz * rw + rx * ly - ry * lx;
+            result.W = rw * lw - (rx * lx + ry * ly + rz * lz);
             return result;
         }
+        #endregion
 
-        public static Quaternion ToQuaternion(Vector3 v)
+        #region Extraxt Values
+        public static string ExtractValues(string instructions, string particle, out string part1, out string part2)
         {
-
-            float cy = (float)Math.Cos(v.Z * 0.5);
-            float sy = (float)Math.Sin(v.Z * 0.5);
-            float cp = (float)Math.Cos(v.Y * 0.5);
-            float sp = (float)Math.Sin(v.Y * 0.5);
-            float cr = (float)Math.Cos(v.X * 0.5);
-            float sr = (float)Math.Sin(v.X * 0.5);
-
-            return new Quaternion
+            try
             {
-                W = (cr * cp * cy + sr * sp * sy),
-                X = (sr * cp * cy - cr * sp * sy),
-                Y = (cr * sp * cy + sr * cp * sy),
-                Z = (cr * cp * sy - sr * sp * cy)
-            };
+                if (!instructions.Contains(particle))
+                {
+                    part1 = string.Empty;
+                    part2 = string.Empty;
+                    return instructions;
+                }
 
+                //Extract relevant part
+                string particleswithdots = particle + ":";
+                string b = instructions.Substring(instructions.IndexOf(particle));
+                string d = b.Contains("r/n/") ? b.Substring(0, b.IndexOf("r/n/")) : b;
+
+                //Process relevant part
+                string specificRelevantInstruction = d.Substring(particleswithdots.Length);
+                part1 = specificRelevantInstruction.Substring(0, 2);
+                part2 = specificRelevantInstruction.Substring(2);
+                return specificRelevantInstruction;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string ExtractValues(string, string, out string, out string): " + ex.Message);
+                part1 = string.Empty;
+                part2 = string.Empty;
+                return string.Empty;
+            }
         }
 
-        public static Vector3 ToEulerAngles(Quaternion q)
+        public static string ExtractValues(string instructions, string particle, out string part1, out string part2, out string part3)
         {
-            Vector3 angles = new();
-
-            // roll / x
-            double sinr_cosp = 2 * (q.W * q.X + q.Y * q.Z);
-            double cosr_cosp = 1 - 2 * (q.X * q.X + q.Y * q.Y);
-            angles.X = (float)Math.Atan2(sinr_cosp, cosr_cosp);
-
-            // pitch / y
-            double sinp = 2 * (q.W * q.Y - q.Z * q.X);
-            if (Math.Abs(sinp) >= 1)
+            try
             {
-                angles.Y = (float)Math.CopySign(Math.PI / 2, sinp);
+                if (!instructions.Contains(particle))
+                {
+                    part1 = string.Empty;
+                    part2 = string.Empty;
+                    part3 = string.Empty;
+                    return instructions;
+                }
+
+                //Extract relevant part
+                string particleswithdots = particle + ":";
+                string b = instructions.Substring(instructions.IndexOf(particle));
+                string d = b.Contains("r/n/") ? b.Substring(0, b.IndexOf("r/n/")) : b;
+
+                //Process relevant part
+                string specificRelevantInstruction = d.Substring(particleswithdots.Length);
+                part1 = specificRelevantInstruction.Substring(0, 2);
+                part2 = specificRelevantInstruction.Substring(2, 2);
+                part3 = specificRelevantInstruction.Substring(4);
+                return specificRelevantInstruction;
             }
-            else
+            catch (Exception ex)
             {
-                angles.Y = (float)Math.Asin(sinp);
+                Console.WriteLine("Error string ExtractValues(string, string, out string, out string): " + ex.Message);
+                part1 = string.Empty;
+                part2 = string.Empty;
+                part3 = string.Empty;
+                return string.Empty;
             }
-
-            // yaw / z
-            double siny_cosp = 2 * (q.W * q.Z + q.X * q.Y);
-            double cosy_cosp = 1 - 2 * (q.Y * q.Y + q.Z * q.Z);
-            angles.Z = (float)Math.Atan2(siny_cosp, cosy_cosp);
-
-            return angles;
         }
+
+        public static string ExtractValues(string instructions, string particle)
+        {
+            try
+            {
+                if (!instructions.Contains(particle))
+                {
+                    return instructions;
+                }
+
+                //Extract relevant part
+                string particleswithdots = particle + ":";
+                string b = instructions.Substring(instructions.IndexOf(particle));
+                string d = string.Empty;
+                if (b.Contains("\r\n"))
+                {
+                    d = b.Substring(0, b.IndexOf("\r\n"));
+                }
+                else
+                {
+                    d = b;
+                }
+
+                //Process relevant part
+                string specificRelevantInstruction = d.Substring(particleswithdots.Length);
+                return specificRelevantInstruction;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string ExtractValues(string, string): " + ex.Message);
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Extract the value of the specific field in the Json, it eliminates everything else
+        /// </summary>
+        /// <param name="instruction">the JSON from which its gonna extract the value</param>
+        /// <param name="valueName">the name of the field to extract</param>
+        /// <returns>the value extacted</returns>
+        public static string ExtractValue(string instruction, string valueName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(instruction))
+                {
+                    return string.Empty;
+                }
+
+                string result = instruction;
+                if (instruction.Contains("\u0022"))
+                {
+                    result = CleanJSON(instruction);
+                }
+
+                if (result.Contains("\"" + valueName + "\":"))
+                {
+                    result = result.Substring(result.IndexOf("\"" + valueName + "\":"));
+                }
+                else if (result.Contains(valueName))
+                {
+                    result = result.Substring(result.IndexOf(valueName));
+                }
+
+                if (result.Contains(","))
+                {
+                    result = result.Replace(result.Substring(result.IndexOf(",")), "");
+                }
+
+                result = UtilityAssistant.PrepareJSON(result);
+                result = result.Replace(valueName, "");
+                result = result.Replace("\"", "");
+                result = result.Replace(":", "");
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string ExtractValues(string, string): " + ex.Message);
+                return string.Empty;
+            }
+        }
+
+        public static string ExtractAIInstructionData(string instruction, string valueName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(instruction))
+                {
+                    return string.Empty;
+                }
+
+                string result = instruction;
+                result = result.Substring(result.IndexOf("\"" + valueName + "\":"));
+                result = result.Replace(result.Substring(result.IndexOf(",")), "");
+                string aarg = "\"" + valueName + "\":";
+                result = result.Replace(aarg, "");
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error string ExtractValues(string, string): " + ex.Message);
+                return string.Empty;
+            }
+        }
+        #endregion
+
+
+        public static double ConvertRadiansToDegrees(double radians)
+        {
+            double degrees = 180 / Math.PI * radians;
+            return degrees;
+        }
+
+        /// <summary>
+        /// Modulates a quaternion by another.
+        /// </summary>
+        /// <param name="left">The first quaternion to modulate.</param>
+        /// <param name="right">The second quaternion to modulate.</param>
+        /// <param name="result">When the moethod completes, contains the modulated quaternion.</param>
 
         //Cuidado, no funciona con con objetos dentro de objetos TODO: Arreglar eso
         public static string[] CutJson(string jsonToCut)
@@ -454,86 +660,35 @@ namespace Interfaz.Utilities
                         Console.WriteLine("StringReader is Null: " + xml);
                     }
                 }
-                return default(T);
+                return default;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error T XmlToClass<T>: " + ex.Message + " Variable in processing: " + toProcess);
-                return default(T);
+                return default;
             }
         }
 
-        public static Quaternion RotateX(float angle)
-        {
-            //Determina la rotación a partir de un ángulo
-            float num = angle * 0.5f;
-            return new Quaternion((float)Math.Sin(num), 0f, 0f, (float)Math.Cos(num));
-        }
-
-        public static Quaternion RotateY(float angle)
-        {
-            //Determina la rotación a partir de un ángulo
-            float num = angle * 0.5f;
-            return new Quaternion(0f, (float)Math.Sin(num), 0f, (float)Math.Cos(num));
-        }
-
-        public static Quaternion RotateZ(float angle)
-        {
-            //Determina la rotación a partir de un ángulo
-            float num = angle * 0.5f;
-            return new Quaternion(0f, 0f, (float)Math.Sin(num), (float)Math.Cos(num));
-        }
-
-        public static Quaternion StringToQuaternion(string information)
-        {
-            try
-            {
-                string sQuaternion = "(" + information.Replace(" ", ",") + ")";
-                // Remove the parentheses
-                if (sQuaternion.StartsWith("(") && sQuaternion.EndsWith(")"))
-                {
-                    sQuaternion = sQuaternion.Substring(1, sQuaternion.Length - 2);
-                }
-
-                // split the items
-                string[] sArray = sQuaternion.Split(',');
-
-                // store as a Vector3
-                Quaternion result = new Quaternion(
-                    float.Parse(sArray[0].Substring(2)),
-                    float.Parse(sArray[1].Substring(2)),
-                    float.Parse(sArray[2].Substring(2)),
-                    float.Parse(sArray[3].Substring(2)));
-
-                return result;
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error Quaternion StringToQuaternion(string): " + ex.Message, ConsoleColor.Red);
-                return Quaternion.Identity;
-            }
-        }
 
         public static string ValidateAndExtractInstructions(string instructions, string signature, out string remainingInstructions)
         {
             try
             {
-                if (String.IsNullOrWhiteSpace(instructions))
+                if (string.IsNullOrWhiteSpace(instructions))
                 {
                     remainingInstructions = instructions;
-                    return String.Empty;
+                    return string.Empty;
                 }
                 else
                 {
                     if (!instructions.Contains(signature))
                     {
                         remainingInstructions = instructions;
-                        return String.Empty;
+                        return string.Empty;
                     }
                 }
 
-                string specificRelevantInstruction = UtilityAssistant.ExtractValues(instructions, signature);
+                string specificRelevantInstruction = ExtractValues(instructions, signature);
                 remainingInstructions = instructions.Replace(specificRelevantInstruction, "");
                 return specificRelevantInstruction;
 
@@ -542,7 +697,7 @@ namespace Interfaz.Utilities
             {
                 Console.WriteLine("Error ValidateInstructions(string, string, out string): " + ex.Message);
                 remainingInstructions = instructions;
-                return String.Empty;
+                return string.Empty;
             }
         }
 
@@ -553,21 +708,21 @@ namespace Interfaz.Utilities
                 part1 = string.Empty;
                 part2 = string.Empty;
 
-                if (String.IsNullOrWhiteSpace(instructions))
+                if (string.IsNullOrWhiteSpace(instructions))
                 {
                     remainingInstructions = instructions;
-                    return String.Empty;
+                    return string.Empty;
                 }
                 else
                 {
                     if (!instructions.Contains(signature))
                     {
                         remainingInstructions = instructions;
-                        return String.Empty;
+                        return string.Empty;
                     }
                 }
 
-                string specificRelevantInstruction = UtilityAssistant.ExtractValues(instructions, signature, out part1, out part2);
+                string specificRelevantInstruction = ExtractValues(instructions, signature, out part1, out part2);
                 remainingInstructions = instructions.Replace(specificRelevantInstruction, "");
                 return specificRelevantInstruction;
 
@@ -578,7 +733,7 @@ namespace Interfaz.Utilities
                 remainingInstructions = instructions;
                 part1 = string.Empty;
                 part2 = string.Empty;
-                return String.Empty;
+                return string.Empty;
             }
         }
 
@@ -590,21 +745,21 @@ namespace Interfaz.Utilities
                 part2 = string.Empty;
                 part3 = string.Empty;
 
-                if (String.IsNullOrWhiteSpace(instructions))
+                if (string.IsNullOrWhiteSpace(instructions))
                 {
                     remainingInstructions = instructions;
-                    return String.Empty;
+                    return string.Empty;
                 }
                 else
                 {
                     if (!instructions.Contains(signature))
                     {
                         remainingInstructions = instructions;
-                        return String.Empty;
+                        return string.Empty;
                     }
                 }
 
-                string specificRelevantInstruction = UtilityAssistant.ExtractValues(instructions, signature, out part1, out part2, out part3);
+                string specificRelevantInstruction = ExtractValues(instructions, signature, out part1, out part2, out part3);
                 remainingInstructions = instructions.Replace(specificRelevantInstruction, "");
                 return specificRelevantInstruction;
 
@@ -616,7 +771,7 @@ namespace Interfaz.Utilities
                 part1 = string.Empty;
                 part2 = string.Empty;
                 part3 = string.Empty;
-                return String.Empty;
+                return string.Empty;
             }
         }
 
@@ -627,10 +782,15 @@ namespace Interfaz.Utilities
             string base64text = string.Empty;
             try
             {
+
                 //Verificar si es relevante siquiera correr la función
                 if (string.IsNullOrWhiteSpace(strTemp))
                 {
                     return string.Empty;
+                }
+                else if(IsValidJson(strTemp))
+                {
+                    return json;
                 }
 
                 if (strTemp.IndexOf("{") > 1)
@@ -642,7 +802,7 @@ namespace Interfaz.Utilities
 
                 if (strTemp.Contains("}"))
                 {
-                    if ((strTemp.Length - strTemp.LastIndexOf("}")) > 2)
+                    if (strTemp.Length - strTemp.LastIndexOf("}") > 2)
                     {
                         //Console.WriteLine("Entro a LastIndexOf>2");
                         strTemp = strTemp.Replace(strTemp.Substring(strTemp.LastIndexOf("}") + 1), "");
@@ -770,19 +930,19 @@ namespace Interfaz.Utilities
                         if (strTemp.Contains("}"))
                         {
                             int location = 0;
-                            if ((strTemp.LastIndexOf("}") - 1) < 2)
+                            if (strTemp.LastIndexOf("}") - 1 < 2)
                             {
                                 location = 1;
                             }
                             else
                             {
-                                location = (strTemp.LastIndexOf("}") - 1);
+                                location = strTemp.LastIndexOf("}") - 1;
                             }
                             strTemp = strTemp.Substring(0, location);
                         }
                         if (strTemp.Contains("}"))
                         {
-                            strTemp = strTemp.Substring(0, strTemp.IndexOf("}"));
+                            strTemp = strTemp.Substring(0, strTemp.IndexOf("}") + 1);
                         }
                     }
 
@@ -807,12 +967,25 @@ namespace Interfaz.Utilities
             }
         }
 
+        public static bool IsValidJson(string jsonString)
+        {
+            try
+            {
+                JsonDocument.Parse(jsonString);
+                return true;
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+        }
+
         public static string Base64Encode(string plainText)
         {
             try
             {
                 byte[] plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-                return System.Convert.ToBase64String(plainTextBytes);
+                return Convert.ToBase64String(plainTextBytes);
             }
             catch (Exception ex)
             {
@@ -825,14 +998,14 @@ namespace Interfaz.Utilities
         {
             try
             {
-                byte[] base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+                byte[] base64EncodedBytes = Convert.FromBase64String(base64EncodedData);
                 string a = System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
 
                 if (a.Contains("="))
                 {
-                    while (a.Contains("==") || (a.LastIndexOf("=") == (a.Length - 1)))
+                    while (a.Contains("==") || a.LastIndexOf("=") == a.Length - 1)
                     {
-                        a = Utilities.UtilityAssistant.Base64Decode(a);
+                        a = Base64Decode(a);
                     }
                 }
 
@@ -850,7 +1023,7 @@ namespace Interfaz.Utilities
             try
             {
                 byte[] plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-                result = System.Convert.ToBase64String(plainTextBytes);
+                result = Convert.ToBase64String(plainTextBytes);
                 return true;
             }
             catch (Exception ex)
@@ -865,14 +1038,14 @@ namespace Interfaz.Utilities
         {
             try
             {
-                byte[] base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+                byte[] base64EncodedBytes = Convert.FromBase64String(base64EncodedData);
                 result = System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
 
                 if (result.Contains("="))
                 {
-                    while (result.Contains("==") || (result.LastIndexOf("=") == (result.Length - 1)))
+                    while (result.Contains("==") || result.LastIndexOf("=") == result.Length - 1)
                     {
-                        result = Utilities.UtilityAssistant.Base64Decode(result);
+                        result = Base64Decode(result);
                     }
                 }
 
@@ -886,6 +1059,61 @@ namespace Interfaz.Utilities
                 Console.ResetColor();
                 result = base64EncodedData;
                 return false;
+            }
+        }
+
+        public static Vector3 Vector3Deserializer(string vector3Json)
+        {
+            string strJson = vector3Json;
+            try
+            {
+                //TODO: Corregir, testear y terminar
+                //strJson = reader.GetString();
+                strJson = strJson.Replace("\"", "").Replace("{a:", "").Replace("{ a:", "").Replace("}", "").Trim();
+
+                if (strJson.Contains(".�M�"))
+                {
+                    //Because it's incomplete
+                    return Vector3.Zero;
+                }
+
+                //strJson = strJson.Replace("´┐¢M´┐¢", "").Replace(".�M�","");
+                string[] secondStep = strJson.Replace("<", "").Replace("u003C", "").Replace(">", "").Replace("u003E", "").Replace("\\", "").Replace("\"", "").Split("|");
+
+                string a = secondStep[0].Replace(".", ",").Trim();
+                string b = secondStep[1].Replace(".", ",").Trim();
+                string c = secondStep[2].Replace(".", ",").Trim();
+
+                //string[] strArray = strJson.Replace("{","").Replace("}","").Split(',');
+
+                Vector3 vector3 = new Vector3((float)Convert.ToDouble(a), (float)Convert.ToDouble(b), (float)Convert.ToDouble(c));
+                return vector3;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: (Vector3Converter) Read(): {0} Message: {1}", strJson, ex.Message);
+                return default;
+            }
+        }
+
+        public static string PrepareJSON(string json)
+        {
+            try
+            {
+                string a = json.Replace("\\u0022", "\"");
+                a = a.Replace("\\u003C", "<");
+                a = a.Replace("\\u003E", ">");
+
+                a = json.Replace("u0022", "\"");
+                a = a.Replace("u003C", "<");
+                a = a.Replace("u003E", ">");
+                a = a.Replace("\\", "");
+                return a;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: static PrepareJSON(string): "+ex.Message);
+                return string.Empty;
             }
         }
     }
@@ -910,6 +1138,22 @@ namespace Interfaz.Utilities
                 return Source;
 
             return Source.Remove(place, Find.Length).Insert(place, Replace);
+        }
+
+        public static bool IsJson(this string source)
+        {
+            if (source == null)
+                return false;
+
+            try
+            {
+                JsonDocument.Parse(source);
+                return true;
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
         }
 
         /*public static string ToJson(this Vector3 vector3)

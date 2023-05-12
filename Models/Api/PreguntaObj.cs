@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace Interfaz.Models
+namespace Interfaz.Models.Api
 {
     public class PreguntaObj
     {
@@ -21,7 +21,7 @@ namespace Interfaz.Models
                 //ReadCommentHandling = JsonCommentHandling.Skip,
                 //    AllowTrailingCommas = true,
 
-                return System.Text.Json.JsonSerializer.Serialize(this, serializeOptions);
+                return JsonSerializer.Serialize(this, serializeOptions);
             }
             catch (Exception ex)
             {
@@ -53,7 +53,7 @@ namespace Interfaz.Models
 
                 //AllowTrailingCommas = true,
                 //ReadCommentHandling = JsonCommentHandling.Skip,
-                PreguntaObj prgObj = System.Text.Json.JsonSerializer.Deserialize<PreguntaObj>(strJsonArr[0], serializeOptions);
+                PreguntaObj prgObj = JsonSerializer.Deserialize<PreguntaObj>(strJsonArr[0], serializeOptions);
                 //this = prgObj;
 
                 return prgObj;
@@ -119,7 +119,7 @@ namespace Interfaz.Models
             catch (Exception ex)
             {
                 Console.WriteLine("Error: (PreguntaObjConverter) Read(): {0} Message: {1}", strJson, ex.Message);
-                return default(PreguntaObj);
+                return default;
             }
         }
 

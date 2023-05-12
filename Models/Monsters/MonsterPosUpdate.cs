@@ -1,19 +1,19 @@
 ﻿using Interfaz.Utilities;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 using System.Numerics;
 using System.Text.Json;
 
-namespace Interfaz.Models
+namespace Interfaz.Models.Monsters
 {
-    public struct ShotPosUpdate
+    public struct MonsterPosUpdate
     {
         public string Id { get; set; }
         public Vector3 Pos { get; set; }
 
-        public ShotPosUpdate(string id, Vector3 pos)
+        public MonsterPosUpdate(string id, Vector3 pos)
         {
-            this.Id = id;
-            this.Pos = pos;
+            Id = id;
+            Pos = pos;
         }
 
         public string ToJson()
@@ -25,7 +25,7 @@ namespace Interfaz.Models
                 {
                     Converters =
                     {
-                    new ShotUpdateConverter()
+                    new MonsterPosUpodateConverter()
                     },
                 };
                 //ReadCommentHandling = JsonCommentHandling.Skip,
@@ -35,12 +35,12 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ShotPosUpdate) ToJson(): " + ex.Message);
+                Console.WriteLine("Error (MonsterPosUpdate) ToJson(): " + ex.Message);
                 return string.Empty;
             }
         }
 
-        public ShotPosUpdate FromJson(string json)
+        public MonsterPosUpdate FromJson(string json)
         {
             try
             {
@@ -48,47 +48,47 @@ namespace Interfaz.Models
                 {
                     Converters =
                     {
-                        new ShotUpdateConverter()
+                        new MonsterPosUpodateConverter()
                     },
                 };
 
                 //AllowTrailingCommas = true,
                 //ReadCommentHandling = JsonCommentHandling.Skip,
-                ShotPosUpdate shot = System.Text.Json.JsonSerializer.Deserialize<ShotPosUpdate>(json, serializeOptions);
+                MonsterPosUpdate shot = System.Text.Json.JsonSerializer.Deserialize<MonsterPosUpdate>(json, serializeOptions);
                 //this = shot;
 
                 return shot;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ShotPosUpdate) FromJson(): " + ex.Message);
-                return default(ShotPosUpdate);
+                Console.WriteLine("Error (MonsterPosUpdate) FromJson(): " + ex.Message);
+                return default;
             }
         }
 
-        public static ShotPosUpdate CreateFromJson(string json)
+        public static MonsterPosUpdate CreateFromJson(string json)
         {
             try
             {
-                if(string.IsNullOrWhiteSpace(json))
+                if (string.IsNullOrWhiteSpace(json))
                 {
-                    new ShotPosUpdate();
+                    new MonsterPosUpdate();
                 }
 
-                ShotPosUpdate shot = new();
+                MonsterPosUpdate shot = new();
                 return shot.FromJson(json);
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error (ShotPosUpdate) CreateFromJson(): " + ex.Message);
-                return default(ShotPosUpdate);
+                Console.WriteLine("Error (MonsterPosUpdate) CreateFromJson(): " + ex.Message);
+                return default;
             }
         }
     }
 
-    public class ShotUpdateConverter : System.Text.Json.Serialization.JsonConverter<ShotPosUpdate>
+    public class MonsterPosUpodateConverter : System.Text.Json.Serialization.JsonConverter<MonsterPosUpdate>
     {
-        public override ShotPosUpdate Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override MonsterPosUpdate Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             string strJson = string.Empty;
             try
@@ -96,8 +96,8 @@ namespace Interfaz.Models
                 //TODO: Corregir, testear y terminar
                 JsonDocument jsonDoc = JsonDocument.ParseValue(ref reader);
                 strJson = jsonDoc.RootElement.GetRawText();
-               
-                if(reader.Read())
+
+                if (reader.Read())
                 {
                     strJson = reader.GetString();
                 }
@@ -111,26 +111,26 @@ namespace Interfaz.Models
                     }
                 };
 
-                ShotPosUpdate shot = new ShotPosUpdate();
+                MonsterPosUpdate shot = new MonsterPosUpdate();
                 string[] a = strJson.Split(",", StringSplitOptions.RemoveEmptyEntries);
                 //string[] a = UtilityAssistant.CutJson(strJson);
                 a[0] = a[0].Substring(a[0].IndexOf(":") + 1).Replace("\"", "");
-                a[1] = "\""+(a[1].Substring(a[1].IndexOf(":") + 1).Replace("\"", "").Replace("}", "\"")); //it sets the " in the replacement to 
+                a[1] = "\"" + a[1].Substring(a[1].IndexOf(":") + 1).Replace("\"", "").Replace("}", "\""); //it sets the " in the replacement to 
                 shot.Id = a[0];
                 //shot.Pos = UtilityAssistant.XmlToClass<SerializedVector3>(a[1]).ConvertToVector3();
-                string tmpString = "{ \"a\":"+a[1]+"}";
+                string tmpString = "{ \"a\":" + a[1] + "}";
                 shot.Pos = System.Text.Json.JsonSerializer.Deserialize<Vector3>(tmpString, serializeOptions); // System.Text.Json.JsonSerializer.Deserialize<SerializedVector3>(a[1]).ConvertToVector3();
 
                 return shot;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("\n\nError: (ShotUpdateConverter) Read(): {0} Message: {1}", strJson, ex.Message);
-                return default(ShotPosUpdate);
+                Console.WriteLine("\n\nError: (MonsterPosUpodateConverter) Read(): {0} Message: {1}", strJson, ex.Message);
+                return default;
             }
         }
 
-        public override void Write(Utf8JsonWriter writer, ShotPosUpdate shot, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, MonsterPosUpdate shot, JsonSerializerOptions options)
         {
             try
             {
@@ -146,7 +146,7 @@ namespace Interfaz.Models
                 //TODO: Corregir, testear y terminar
                 string Id = "\"" + shot.Id + "\"";
                 //string Pos = new SerializedVector3(shot.Pos).ToXML();
-                string Pos = System.Text.Json.JsonSerializer.Serialize<Vector3>(shot.Pos,serializeOptions); //new SerializedVector3(shot.Pos).ToJson();
+                string Pos = System.Text.Json.JsonSerializer.Serialize(shot.Pos, serializeOptions); //new SerializedVector3(shot.Pos).ToJson();
 
                 string resultJson = "{\"Id\":" + Id + ", \"Pos\":" + Pos + "}";
                 writer.WriteStringValue(resultJson);
@@ -158,9 +158,9 @@ namespace Interfaz.Models
         }
     }
 
-    public class ShotUpdateConverterJSON : Newtonsoft.Json.JsonConverter<ShotPosUpdate>
+    /*public class MonsterPosUpdateConverterJSON : JsonConverter<MonsterPosUpdate>
     {
-        public override void WriteJson(JsonWriter writer, ShotPosUpdate shot, Newtonsoft.Json.JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, MonsterPosUpdate shot, Newtonsoft.Json.JsonSerializer serializer)
         {
             try
             {
@@ -174,11 +174,11 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: (ShotUpdateConverterJSON) Write(): " + ex.Message);
+                Console.WriteLine("Error: (MonsterPosUpdateConverterJSON) Write(): " + ex.Message);
             }
         }
 
-        public override ShotPosUpdate ReadJson(JsonReader reader, Type objectType, ShotPosUpdate existingValue, bool hasExistingValue, Newtonsoft.Json.JsonSerializer serializer)
+        public override MonsterPosUpdate ReadJson(JsonReader reader, Type objectType, MonsterPosUpdate existingValue, bool hasExistingValue, Newtonsoft.Json.JsonSerializer serializer)
         {
             string strJson = string.Empty;
             try
@@ -190,7 +190,7 @@ namespace Interfaz.Models
                 //Console.WriteLine("strJson: "+ strJson);
                 //Console.ResetColor();
 
-                ShotPosUpdate shot = new ShotPosUpdate();
+                MonsterPosUpdate shot = new MonsterPosUpdate();
                 string[] a = UtilityAssistant.CutJson(strJson);
                 shot.Id = a[0];
                 //shot.Pos = UtilityAssistant.XmlToClass<SerializedVector3>(a[1]).ConvertToVector3();
@@ -200,9 +200,9 @@ namespace Interfaz.Models
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: (ShotUpdateConverterJSON) ReadJson(): {0} Message: {1}", strJson, ex.Message);
-                return default(ShotPosUpdate);
+                Console.WriteLine("Error: (MonsterPosUpdateConverterJSON) ReadJson(): {0} Message: {1}", strJson, ex.Message);
+                return default;
             }
         }
-    }
+    }*/
 }
