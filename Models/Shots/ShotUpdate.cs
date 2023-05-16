@@ -44,6 +44,7 @@ namespace Interfaz.Models.Shots
         {
             try
             {
+                string cleanTemp = json.Replace("\"{", "{").Replace("}\"","}");
                 JsonSerializerOptions serializeOptions = new JsonSerializerOptions
                 {
                     Converters =
@@ -54,7 +55,7 @@ namespace Interfaz.Models.Shots
 
                 //AllowTrailingCommas = true,
                 //ReadCommentHandling = JsonCommentHandling.Skip,
-                ShotPosUpdate shot = System.Text.Json.JsonSerializer.Deserialize<ShotPosUpdate>(json, serializeOptions);
+                ShotPosUpdate shot = System.Text.Json.JsonSerializer.Deserialize<ShotPosUpdate>(cleanTemp, serializeOptions);
                 //this = shot;
 
                 return shot;
